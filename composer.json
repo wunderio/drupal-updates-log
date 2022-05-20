@@ -4,6 +4,7 @@
     "description": "Log module update info",
     "keywords": ["Drupal", "Update", "Log"],
     "homepage": "https://github.com/wunderio/drupal-updates-log",
+    "minimum-stability": "dev",
     "require": {
         "php": ">=7.4",
         "drupal/core": "^8 || ^9 || ^10"
