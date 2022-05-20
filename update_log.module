@@ -1,0 +1,73 @@
+<?php
+
+function update_log_cron() {
+  if (!update_log_business_should_update()) {
+    return;
+  }
+  $statuses = update_log_storage_get_statuses();
+  $statuses = update_log_presentation_log($statuses);
+  update_log_business_update_last();
+}
+
+function update_log_business_should_update(): bool {
+
+  $last = \Drupal::state()->get('update_log.last_cron');
+  if (empty($last)) {
+    return TRUE;
+  }
+
+  $now = time();
+
+  $now = date('Ymd', $now);
+  $last = date('Ymd', $last);
+  $status = $now !== $last;
+  return $status;
+}
+
+function update_log_business_update_last(): void {
+  \Drupal::state()->set('update_log.last_cron', time());
+}
+
+function update_log_presentation_log(array $statuses): void {
+  $logger = \Drupal::logger('update_log');
+  foreach ($statuses as $key => $status) {
+    $message = [
+      'project' => $key,
+      'status' => $status,
+    ];
+    $message = json_encode($message);
+    // https://api.drupal.org/api/drupal/core%21lib%21Drupal%21Component%21Render%21FormattableMarkup.php/function/FormattableMarkup%3A%3AplaceholderFormat/9.3.x
+    $logger->info('@msg', ['@msg' => $message]);
+  }
+}
+
+function update_log_storage_get_statuses(): array {
+
+  $map = [
+
+    // web/core/modules/update/src/UpdateManagerInterface.php
+    1 => 'NOT_SECURE',
+    2 => 'REVOKED',
+    3 => 'NOT_SUPPORTED',
+    4 => 'NOT_CURRENT',
+    5 => 'CURRENT',
+
+    // web/core/modules/update/src/UpdateFetcherInterface.php
+    -1 => 'NOT_CHECKED',
+    -2 => 'UNKNOWN',
+    -3 => 'NOT_FETCHED',
+    -4 => 'FETCH_PENDING',
+  ];
+
+  $available = update_get_available(TRUE);
+  $project_data = update_calculate_project_data($available);
+  ksort($project_data);
+  $statuses = [];
+  foreach ($project_data as $key => $data) {
+    $status = $data['status'];
+    $status = empty($map[$status]) ? '???' : $map[$status];
+    $statuses[$key] = $status;
+  }
+
+  return $statuses;
+}

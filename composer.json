@@ -1,0 +1,11 @@
+{
+    "name": "wunderio/drupal-update-log",
+    "type": "drupal-module",
+    "description": "Log module update info",
+    "keywords": ["Drupal", "Update", "Log"],
+    "homepage": "https://github.com/wunderio/drupal-updates-log",
+    "require": {
+        "php": ">=7.4",
+        "drupal/core": "^8 || ^9 || ^10"
+    }
+}
