@@ -1,17 +1,17 @@
 <?php
 
-function update_log_cron() {
-  if (!update_log_business_should_update()) {
+function updates_log_cron() {
+  if (!updates_log_business_should_update()) {
     return;
   }
-  $statuses = update_log_storage_get_statuses();
-  $statuses = update_log_presentation_log($statuses);
-  update_log_business_update_last();
+  $statuses = updates_log_storage_get_statuses();
+  $statuses = updates_log_presentation_log($statuses);
+  updates_log_business_update_last();
 }
 
-function update_log_business_should_update(): bool {
+function updates_log_business_should_update(): bool {
 
-  $last = \Drupal::state()->get('update_log.last_cron');
+  $last = \Drupal::state()->get('updates_log.last_cron');
   if (empty($last)) {
     return TRUE;
   }
@@ -24,12 +24,12 @@ function update_log_business_should_update(): bool {
   return $status;
 }
 
-function update_log_business_update_last(): void {
-  \Drupal::state()->set('update_log.last_cron', time());
+function updates_log_business_update_last(): void {
+  \Drupal::state()->set('updates_log.last_cron', time());
 }
 
-function update_log_presentation_log(array $statuses): void {
-  $logger = \Drupal::logger('update_log');
+function updates_log_presentation_log(array $statuses): void {
+  $logger = \Drupal::logger('updates_log');
   foreach ($statuses as $key => $status) {
     $message = [
       'project' => $key,
@@ -41,7 +41,7 @@ function update_log_presentation_log(array $statuses): void {
   }
 }
 
-function update_log_storage_get_statuses(): array {
+function updates_log_storage_get_statuses(): array {
 
   $map = [
 
