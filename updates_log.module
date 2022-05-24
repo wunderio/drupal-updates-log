@@ -35,9 +35,12 @@ function updates_log_presentation_log(array $statuses): void {
       'project' => $key,
       'status' => $status,
     ];
-    $message = json_encode($message);
-    // https://api.drupal.org/api/drupal/core%21lib%21Drupal%21Component%21Render%21FormattableMarkup.php/function/FormattableMarkup%3A%3AplaceholderFormat/9.3.x
-    $logger->info('@msg', ['@msg' => $message]);
+    // It is problematic to get JSON logged.
+    // https://stackoverflow.com/a/67669934/1602728
+    $logger->info(
+      "{json}",
+      $message
+    );
   }
 }
 
