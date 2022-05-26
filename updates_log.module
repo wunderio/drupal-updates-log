@@ -4,6 +4,7 @@ function updates_log_cron() {
   if (!updates_log_business_should_update()) {
     return;
   }
+  updates_log_refresh();
   $statuses = updates_log_storage_get_statuses();
   $statuses = updates_log_presentation_log($statuses);
   updates_log_business_update_last();
@@ -42,6 +43,14 @@ function updates_log_presentation_log(array $statuses): void {
       $message
     );
   }
+}
+
+// Ripped from update_cron().
+// Fetch the fresh data.
+function updates_log_refresh(): array {
+  update_refresh();
+  update_fetch_data();
+  update_clear_update_disk_cache();
 }
 
 function updates_log_storage_get_statuses(): array {
