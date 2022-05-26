@@ -47,7 +47,7 @@ function updates_log_presentation_log(array $statuses): void {
 
 // Ripped from update_cron().
 // Fetch the fresh data.
-function updates_log_refresh(): array {
+function updates_log_refresh(): void {
   update_refresh();
   update_fetch_data();
   update_clear_update_disk_cache();
