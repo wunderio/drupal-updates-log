@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<!-- See http://pear.php.net/manual/en/package.php.php-codesniffer.annotated-ruleset.php -->
+<ruleset name="Custom Ruleset">
+    <rule ref="Drupal">
+        <exclude name="Drupal.Commenting.DocComment.ContentAfterOpen" />
+        <exclude name="Drupal.Commenting.DocComment.MissingShort" />
+    </rule>
+    <rule ref="DrupalPractice"/>
+    <rule ref="Security"/>
+    <rule ref="PHPCompatibility"/>
+    <rule ref="VariableAnalysis"/>
+    <rule ref="WunderDrupal"/>
+    <rule ref="WunderSecurity"/>
+</ruleset>

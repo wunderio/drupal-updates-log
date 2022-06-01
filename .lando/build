@@ -1,0 +1,28 @@
+#!/bin/bash
+
+set -xeuo pipefail
+export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin
+
+drupal_root=drupal
+proj="/app/$drupal_root"
+web="$proj/web"
+sites="$web/sites"
+default="$sites/default"
+
+set +e
+rm -rf "$proj"
+chmod -R 777 "$proj"
+rm -rf "$proj"
+set -e
+
+# NB! When Composer breaks:
+# https://www.drupal.org/project/drupal/issues/3255749
+cd /app
+composer create-project drupal/recommended-project "$drupal_root"
+
+chmod 755 "$default"
+rm -f "$default/settings.php"
+ln -s /app/settings.php "$default/"
+
+cd "$proj"
+composer require --dev drush/drush

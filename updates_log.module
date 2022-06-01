@@ -1,21 +1,24 @@
 <?php
 
-function updates_log_cron() {
+function updates_log_cron(): void {
   if (!updates_log_business_should_update()) {
     return;
   }
   updates_log_refresh();
   $statuses = updates_log_storage_get_statuses();
-  $statuses = updates_log_presentation_log($statuses);
+  updates_log_presentation_log($statuses);
   updates_log_business_update_last();
 }
 
 function updates_log_business_should_update(): bool {
 
+  /** @var ?mixed */
   $last = \Drupal::state()->get('updates_log.last_cron');
   if (empty($last)) {
     return TRUE;
   }
+
+  $last = (int) $last;
 
   $now = time();
 
@@ -29,6 +32,9 @@ function updates_log_business_update_last(): void {
   \Drupal::state()->set('updates_log.last_cron', time());
 }
 
+/**
+ * @param array<string, string> $statuses
+ */
 function updates_log_presentation_log(array $statuses): void {
   $logger = \Drupal::logger('updates_log');
   foreach ($statuses as $key => $status) {
@@ -53,6 +59,9 @@ function updates_log_refresh(): void {
   update_clear_update_disk_cache();
 }
 
+/**
+ * @return array<string, string>
+ */
 function updates_log_storage_get_statuses(): array {
 
   $map = [
@@ -71,7 +80,9 @@ function updates_log_storage_get_statuses(): array {
     -4 => 'FETCH_PENDING',
   ];
 
+  /** @var array */
   $available = update_get_available(TRUE);
+  /** @var array<string, array{status: int}> */
   $project_data = update_calculate_project_data($available);
   ksort($project_data);
   $statuses = [];

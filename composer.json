@@ -4,6 +4,24 @@
     "description": "Log module update info",
     "keywords": ["Drupal", "Update", "Log"],
     "homepage": "https://github.com/wunderio/drupal-updates-log",
+    "authors": [
+        {
+            "name": "Ragnar Kurm",
+            "email": "ragnar.kurm@wunder.io",
+            "homepage": "https://github.com/ragnarkurmwunder",
+            "role": "Owwner"
+        }
+    ],
+    "keywords": [
+        "drupal",
+        "updates",
+        "log",
+        "security"
+    ],
+    "require-dev": {
+        "wunderio/code-quality": "^2",
+        "phpunit/phpunit": "^9"
+    },
     "require": {
         "php": ">=7.4",
         "drupal/core": "^8 || ^9"
