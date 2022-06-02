@@ -5,6 +5,8 @@
  * This is a settings.php for testing _ping.php functionality.
  */
 
+declare(strict_types = 1);
+
 if (empty($databases)) {
   $databases = [];
 }

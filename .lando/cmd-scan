@@ -12,12 +12,9 @@ cd /app
 
 set -x
 
-for file in ${files[*]}
-do
-  php -l "$file"
-  phpcs -sp --report=full --runtime-set testVersion 7.4 "$file"
-done
+echo "${files[*]}" \
+| xargs --verbose --max-args=1 php -l
 
-phpstan analyze --level=5 --autoload-file scan-autoload.php -- ${files[*]}
-
-psalm --show-info=true --php-version=7.4
+phpcs --runtime-set testVersion 7.4
+phpstan analyze
+psalm

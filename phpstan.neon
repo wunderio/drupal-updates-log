@@ -1,0 +1,12 @@
+parameters:
+  bootstrapFiles:
+    - scan-autoload.php
+  fileExtensions:
+    - php
+    - module
+  level: 6
+  parallel:
+    maximumNumberOfProcesses: 10
+  paths:
+    - settings.php
+    - updates_log.module

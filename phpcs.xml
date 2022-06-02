@@ -1,9 +1,21 @@
 <?xml version="1.0"?>
 <!-- See http://pear.php.net/manual/en/package.php.php-codesniffer.annotated-ruleset.php -->
 <ruleset name="Custom Ruleset">
+
+   <arg name="colors"/>
+   <arg name="extensions" value="module,php" />
+   <arg name="report" value="full"/>
+   <arg name="report-width" value="auto"/>
+   <arg value="sp"/>
+
+    <file>settings.php</file>
+    <file>updates_log.module</file>
+
     <rule ref="Drupal">
         <exclude name="Drupal.Commenting.DocComment.ContentAfterOpen" />
         <exclude name="Drupal.Commenting.DocComment.MissingShort" />
+        <exclude name="Drupal.Commenting.FunctionComment.ParamTypeSpaces" />
+        <exclude name="Drupal.Commenting.FunctionComment.ReturnTypeSpaces" />
     </rule>
     <rule ref="DrupalPractice"/>
     <rule ref="Security"/>
@@ -11,4 +23,5 @@
     <rule ref="VariableAnalysis"/>
     <rule ref="WunderDrupal"/>
     <rule ref="WunderSecurity"/>
+
 </ruleset>

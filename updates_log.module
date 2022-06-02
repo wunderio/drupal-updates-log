@@ -1,5 +1,17 @@
 <?php
 
+/**
+ * @file
+ * Updates Log module.
+ */
+
+declare(strict_types = 1);
+
+/**
+ * Implements hook_cron().
+ *
+ * Log module statuses when necessary.
+ */
 function updates_log_cron(): void {
   if (!updates_log_business_should_update()) {
     return;
@@ -7,33 +19,58 @@ function updates_log_cron(): void {
   updates_log_refresh();
   $statuses = updates_log_storage_get_statuses();
   updates_log_presentation_log($statuses);
-  updates_log_business_update_last();
+  updates_log_business_update_set();
 }
 
+/**
+ * Decides wether it's time for logging.
+ *
+ * @return bool
+ *   False = don't update. True = do update.
+ */
 function updates_log_business_should_update(): bool {
 
-  /** @var ?mixed */
-  $last = \Drupal::state()->get('updates_log.last_cron');
+  $last = updates_log_business_update_get();
   if (empty($last)) {
     return TRUE;
   }
 
-  $last = (int) $last;
-
   $now = time();
-
   $now = date('Ymd', $now);
   $last = date('Ymd', $last);
   $status = $now !== $last;
+
   return $status;
 }
 
-function updates_log_business_update_last(): void {
+/**
+ * Get the last update time.
+ *
+ * @return int
+ *   Return int of last update time, or NULL when first time.
+ */
+function updates_log_business_update_get(): ?int {
+
+  /** @var ?mixed */
+  $last = \Drupal::state()->get('updates_log.last_cron');
+
+  $last = empty($last) ? NULL : (int) $last;
+
+  return $last;
+}
+
+/**
+ * Set the last update time.
+ */
+function updates_log_business_update_set(): void {
   \Drupal::state()->set('updates_log.last_cron', time());
 }
 
 /**
+ * Log the modules, and statuses.
+ *
  * @param array<string, string> $statuses
+ *   An associative array of ['module_name' => 'status_string'].
  */
 function updates_log_presentation_log(array $statuses): void {
   $logger = \Drupal::logger('updates_log');
@@ -51,8 +88,11 @@ function updates_log_presentation_log(array $statuses): void {
   }
 }
 
-// Ripped from update_cron().
-// Fetch the fresh data.
+/**
+ * Update module statuses, get the fresh data from internet.
+ *
+ * Ripped from update_cron().
+ */
 function updates_log_refresh(): void {
   update_refresh();
   update_fetch_data();
@@ -60,30 +100,35 @@ function updates_log_refresh(): void {
 }
 
 /**
+ * Get module statuses from Drupal.
+ *
  * @return array<string, string>
+ *   Return array of ['module_name' => 'status_string'].
  */
 function updates_log_storage_get_statuses(): array {
 
   $map = [
 
-    // web/core/modules/update/src/UpdateManagerInterface.php
+    // From web/core/modules/update/src/UpdateManagerInterface.php.
     1 => 'NOT_SECURE',
     2 => 'REVOKED',
     3 => 'NOT_SUPPORTED',
     4 => 'NOT_CURRENT',
     5 => 'CURRENT',
 
-    // web/core/modules/update/src/UpdateFetcherInterface.php
+    // From web/core/modules/update/src/UpdateFetcherInterface.php.
     -1 => 'NOT_CHECKED',
     -2 => 'UNKNOWN',
     -3 => 'NOT_FETCHED',
     -4 => 'FETCH_PENDING',
   ];
 
-  /** @var array */
+  /** @var array<mixed> */
   $available = update_get_available(TRUE);
+
   /** @var array<string, array{status: int}> */
   $project_data = update_calculate_project_data($available);
+
   ksort($project_data);
   $statuses = [];
   foreach ($project_data as $key => $data) {
