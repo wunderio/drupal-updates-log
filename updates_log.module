@@ -54,7 +54,7 @@ function updates_log_business_update_get(): ?int {
   /** @var ?mixed */
   $last = \Drupal::state()->get('updates_log.last_cron');
 
-  $last = empty($last) ? NULL : (int) $last;
+  $last = empty($last) ? NULL : intval($last);
 
   return $last;
 }
