@@ -13,29 +13,34 @@ declare(strict_types = 1);
  * Log module statuses when necessary.
  */
 function updates_log_cron(): void {
-  if (!updates_log_business_should_update()) {
+  $now = time();
+  $last = updates_log_business_last_get();
+  if (!updates_log_business_should_update($now, $last)) {
     return;
   }
   updates_log_refresh();
   $statuses = updates_log_storage_get_statuses();
   updates_log_presentation_log($statuses);
-  updates_log_business_update_set();
+  updates_log_business_last_set($now);
 }
 
 /**
  * Decides wether it's time for logging.
  *
+ * @param int $now
+ *   The epoch timestamp of the now.
+ * @param int $last
+ *   Last report time (spoch seconds).
+ *
  * @return bool
  *   False = don't update. True = do update.
  */
-function updates_log_business_should_update(): bool {
+function updates_log_business_should_update(int $now, ?int $last): bool {
 
-  $last = updates_log_business_update_get();
   if (empty($last)) {
     return TRUE;
   }
 
-  $now = time();
   $now = date('Ymd', $now);
   $last = date('Ymd', $last);
   $status = $now !== $last;
@@ -49,7 +54,7 @@ function updates_log_business_should_update(): bool {
  * @return int
  *   Return int of last update time, or NULL when first time.
  */
-function updates_log_business_update_get(): ?int {
+function updates_log_business_last_get(): ?int {
 
   /** @var ?mixed */
   $last = \Drupal::state()->get('updates_log.last_cron');
@@ -61,9 +66,12 @@ function updates_log_business_update_get(): ?int {
 
 /**
  * Set the last update time.
+ *
+ * @param int $time
+ *   Set update last time logged.
  */
-function updates_log_business_update_set(): void {
-  \Drupal::state()->set('updates_log.last_cron', time());
+function updates_log_business_last_set(?int $time): void {
+  \Drupal::state()->set('updates_log.last_cron', $time);
 }
 
 /**

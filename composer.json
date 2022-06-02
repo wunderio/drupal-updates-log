@@ -2,7 +2,6 @@
     "name": "wunderio/updates_log",
     "type": "drupal-module",
     "description": "Log module update info",
-    "keywords": ["Drupal", "Update", "Log"],
     "homepage": "https://github.com/wunderio/drupal-updates-log",
     "authors": [
         {

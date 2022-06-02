@@ -1,4 +1,4 @@
-# updates_log
+# Updates Log
 
 Log Drupal project update statuses.
 
@@ -40,3 +40,10 @@ Status codes are taken from the Drupal code:
   - `UNKNOWN`
   - `NOT_FETCHED`
   - `FETCH_PENDING`
+
+## Development of `updates_log`
+
+- `lando install` - Install development packages of the module.
+- `lando scan` - Run code scanners after development and before committing.
+- `lando start` - Start up the development environment
+- `lando test` - Run tests during/after development and before committing.

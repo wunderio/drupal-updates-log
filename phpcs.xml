@@ -14,6 +14,7 @@
     <rule ref="Drupal">
         <exclude name="Drupal.Commenting.DocComment.ContentAfterOpen" />
         <exclude name="Drupal.Commenting.DocComment.MissingShort" />
+        <exclude name="Drupal.Commenting.FunctionComment.IncorrectTypeHint" />
         <exclude name="Drupal.Commenting.FunctionComment.ParamTypeSpaces" />
         <exclude name="Drupal.Commenting.FunctionComment.ReturnTypeSpaces" />
     </rule>

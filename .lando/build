@@ -8,6 +8,7 @@ proj="/app/$drupal_root"
 web="$proj/web"
 sites="$web/sites"
 default="$sites/default"
+mod="$web/modules/custom/updates_log"
 
 set +e
 rm -rf "$proj"
@@ -19,6 +20,14 @@ set -e
 # https://www.drupal.org/project/drupal/issues/3255749
 cd /app
 composer create-project drupal/recommended-project "$drupal_root"
+
+# Add the package.
+# We have to create pseudo-package by linking
+# Otherwise we create a loop,
+# /app/drupal/web/modules/custom/updates_log -> /app
+mkdir -p "$mod"
+ln -s /app/updates_log.info.yml "$mod/"
+ln -s /app/updates_log.module "$mod/"
 
 chmod 755 "$default"
 rm -f "$default/settings.php"
