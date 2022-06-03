@@ -17,6 +17,7 @@
         "log",
         "security"
     ],
+    "license": "GPL-3.0",
     "require-dev": {
         "wunderio/code-quality": "^2",
         "phpunit/phpunit": "^9"
