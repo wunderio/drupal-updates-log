@@ -66,3 +66,4 @@ It is needed for deciding when to send out the next batch of logs.
 - `lando scan` - Run code scanners after development and before committing.
 - `lando start` - Start up the development environment
 - `lando test` - Run tests during/after development and before committing.
+
