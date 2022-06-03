@@ -21,9 +21,12 @@ As an alternative there is Warden, but it lacks highly configurable alerting.
 On daily bases it logs module statuses like this:
 
 ```
-  14309326   19/May 09:31   updates_log   Info       {"project":"webform","status":"NOT_CURRENT"}
-  14309325   19/May 09:31   updates_log   Info       {"project":"warden","status":"NOT_SECURE"}
-  14309324   19/May 09:31   updates_log   Info       {"project":"video_embed_field","status":"CURRENT"}
+ ---- -------------- ------------- ---------- -----------------------------------------
+  ID   Date           Type          Severity   Message
+ ---- -------------- ------------- ---------- -----------------------------------------
+  68   03/Jun 16:34   updates_log   Info       ("project":"drupal","status":"CURRENT")
+  69   03/Jun 16:34   updates_log   Info       ("project":"module1","status":"NOT_SECURE")
+  70   03/Jun 16:34   updates_log   Info       ("project":"module2","status":"NOT_CURRENT")
 ```
 
 Status codes are taken from the Drupal code:
