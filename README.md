@@ -41,6 +41,22 @@ Status codes are taken from the Drupal code:
   - `NOT_FETCHED`
   - `FETCH_PENDING`
 
+## Timing
+
+Essentially two date strings are compared in format of `YYYYMMDD`.
+If last datestamp and current one differ, the logs are issued.
+The dates are generated according to the local time.
+
+## State
+
+The state of the module is kept in Drupal State `updates_log.last`.
+The value represent the last time the logs were issued.
+The value is stored as seconds since epoch.
+It is needed for deciding when to send out the next batch of logs.
+
+- `drush sget updates_log.last`
+- `drush sset updates_log.last 1654253832`
+
 ## Development of `updates_log`
 
 - `lando install` - Install development packages of the module.

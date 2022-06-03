@@ -30,5 +30,8 @@ $databases['default']['default'] = [
   'username' => $db->creds->user,
 ];
 
+// Need hash salt, otherwise cannot run some drush commands.
+$settings['hash_salt'] = 'test';
+
 // @codingStandardsIgnoreLine DrupalPractice.Commenting.CommentEmptyLine.SpacingAfter
 // Ignore settings added by Drupal install below this line.

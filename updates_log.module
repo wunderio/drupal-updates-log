@@ -57,7 +57,7 @@ function updates_log_business_should_update(int $now, ?int $last): bool {
 function updates_log_business_last_get(): ?int {
 
   /** @var ?mixed */
-  $last = \Drupal::state()->get('updates_log.last_cron');
+  $last = \Drupal::state()->get('updates_log.last');
 
   $last = empty($last) ? NULL : intval($last);
 
@@ -71,7 +71,7 @@ function updates_log_business_last_get(): ?int {
  *   Set update last time logged.
  */
 function updates_log_business_last_set(?int $time): void {
-  \Drupal::state()->set('updates_log.last_cron', $time);
+  \Drupal::state()->set('updates_log.last', $time);
 }
 
 /**
