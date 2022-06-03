@@ -10,11 +10,15 @@ and analysis.
 
 As an alternative there is Warden, but it lacks highly configurable alerting.
 
+## Distribution
+
+- [Packagist](https://packagist.org/packages/wunderio/updates_log)
+- [GitHub](https://github.com/wunderio/drupal-updates-log)
+
 ## Install
 
-1. `composer config repositories.updates_log vcs https://github.com/wunderio/drupal-updates-log.git`
-2. `composer require wunderio/updates_log`
-3. `drush en -y updates_log`
+1. `composer require wunderio/updates_log:^1`
+2. `drush en -y updates_log`
 
 ## Usage
 
