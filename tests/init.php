@@ -1,5 +1,15 @@
 <?php
 
+/*
+* This is an alternative way of booting:
+* https://hibern8.wordpress.com/2018/09/25/drupal-8-bootstrap-from-external-script/
+* The problem still exists is this:
+* if drupal is boostrapped by en external script (phpunit)
+* then certian functions
+* (update_refresh(), update_fetch_data(), update_clear_update_disk_cache())
+* mess up the db().
+*/
+
 use Drupal\Core\DrupalKernel;
 use Drupal\Core\StreamWrapper\StreamWrapperInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -19,10 +29,6 @@ if (empty(getenv('TESTING'))) {
   $kernel->boot();
 
   $container = $kernel->getContainer();
-
-  // Otherwise update cannot refresh data.
-  // It needs to be able to save downloaded files.
-  $container->get('stream_wrapper_manager')->registerWrapper('temporary', 'Drupal\Core\StreamWrapper\TemporaryStream', StreamWrapperInterface::LOCAL_NORMAL);
 
   // It seems boot does not set current request.
   // Need to set manually.

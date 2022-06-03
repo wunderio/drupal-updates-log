@@ -16,6 +16,6 @@ drush status bootstrap | grep -q Successful
 status="$?"
 set -e
 if [[ "$status" -ne 0 ]]; then
-  ./vendor/bin/drush site-install minimal -y
-  ./vendor/bin/drush pm-install updates_log -y
+  drush site-install minimal -y
+  drush pm-install updates_log -y
 fi
