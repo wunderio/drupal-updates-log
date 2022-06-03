@@ -1,27 +1,33 @@
 <?php
 
+use \Drupal\updates_log\UpdatesLog;
 use \PHPUnit\Framework\TestCase;
 
+/**
+ * @coversDefaultClass \Drupal\updats_log\UpdatesLog
+ */
 class LastTest extends TestCase {
 
   /**
-   * @covers updates_log_business_last_get
-   * @covers updates_log_business_last_set
+   * @covers ::LastGet
+   * @covers ::LastSet
    */
   public function testNull(): void {
-    updates_log_business_last_set(NULL);
-    $timestamp = updates_log_business_last_get();
-    $this->assertNull($imestamp);
+    $m = new UpdatesLog();
+    $m->LastSet(NULL);
+    $timestamp = $m->LastGet();
+    $this->assertNull($timestamp);
   }
 
   /**
-   * @covers updates_log_business_last_get
-   * @covers updates_log_business_last_set
+   * @covers ::LastGet
+   * @covers ::LastSet
    */
   public function testNumeric(): void {
+    $m = new UpdatesLog();
     $now = time();
-    updates_log_business_last_set($now);
-    $timestamp = updates_log_business_last_get();
+    $m->LastSet($now);
+    $timestamp = $m->LastGet();
     $this->assertIsInt($timestamp);
     $this->assertEquals($now, $timestamp);
   }

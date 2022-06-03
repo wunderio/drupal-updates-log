@@ -30,8 +30,11 @@ $databases['default']['default'] = [
   'username' => $db->creds->user,
 ];
 
-// Need hash salt, otherwise cannot run some drush commands.
-$settings['hash_salt'] = 'test';
+// Make status page happy.
+$settings['trusted_host_patterns'] = ['^'];
+
+// Update needs to be able to save temporary files.
+$conf['file_temporary_path'] = '/tmp';
 
 // @codingStandardsIgnoreLine DrupalPractice.Commenting.CommentEmptyLine.SpacingAfter
 // Ignore settings added by Drupal install below this line.

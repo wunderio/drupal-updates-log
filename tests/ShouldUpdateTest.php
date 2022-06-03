@@ -1,30 +1,37 @@
 <?php
 
+use \Drupal\updates_log\UpdatesLog;
 use \PHPUnit\Framework\TestCase;
 
+/**
+ * @coversDefaultClass \Drupal\updats_log\UpdatesLog
+ */
 class ShouldUpdateTest extends TestCase {
 
   /**
-   * @covers updates_log_business_should_update
+   * @covers ::ShouldUpdate
    */
   public function testFirstTime(): void {
-    $status = updates_log_business_should_update(time(), NULL);
+    $m = new UpdatesLog();
+    $status = $m->ShouldUpdate(time(), NULL);
     $this->assertTrue($status);
   }
 
   /**
-   * @covers updates_log_business_should_update
+   * @covers ::ShouldUpdate
    */
   public function testImmediately(): void {
-    $status = updates_log_business_should_update(time(), time() + 1);
+    $m = new UpdatesLog();
+    $status = $m->ShouldUpdate(time(), time() + 1);
     $this->assertFalse($status);
   }
 
   /**
-   * @covers updates_log_business_should_update
+   * @covers ::ShouldUpdate
    */
   public function testLater(): void {
-    $status = updates_log_business_should_update(time(), time() - 24 * 60 * 60);
+    $m = new UpdatesLog();
+    $status = $m->ShouldUpdate(time(), time() - 24 * 60 * 60);
     $this->assertTrue($status);
   }
 

@@ -1,14 +1,19 @@
 <?php
 
+use \Drupal\updates_log\UpdatesLog;
 use \PHPUnit\Framework\TestCase;
 
+/**
+ * @coversDefaultClass \Drupal\updats_log\UpdatesLog
+ */
 class GetStatusesTest extends TestCase {
 
   /**
-   * @covers updates_log_cron
+   * @covers ::StatusesGet
    */
   public function testStructure(): void {
-    $statuses = updates_log_storage_get_statuses();
+    $m = new UpdatesLog();
+    $statuses = $m->StatusesGet();
     $expected = [
       'drupal' => 'CURRENT',
     ];

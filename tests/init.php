@@ -1,6 +1,7 @@
 <?php
 
 use Drupal\Core\DrupalKernel;
+use Drupal\Core\StreamWrapper\StreamWrapperInterface;
 use Symfony\Component\HttpFoundation\Request;
 
 if (empty(getenv('TESTING'))) {
@@ -17,10 +18,15 @@ if (empty(getenv('TESTING'))) {
   $kernel = DrupalKernel::createFromRequest($request, $autoloader, 'prod');
   $kernel->boot();
 
+  $container = $kernel->getContainer();
+
+  // Otherwise update cannot refresh data.
+  // It needs to be able to save downloaded files.
+  $container->get('stream_wrapper_manager')->registerWrapper('temporary', 'Drupal\Core\StreamWrapper\TemporaryStream', StreamWrapperInterface::LOCAL_NORMAL);
+
   // It seems boot does not set current request.
   // Need to set manually.
   // Otherwise update_get_available() fails.
-  $container = $kernel->getContainer();
   $container->get('request_stack')->push($request);
 
   // Define DRUPAL_ROOT if it's not yet defined by bootstrap.
