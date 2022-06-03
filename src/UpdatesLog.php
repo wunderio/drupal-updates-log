@@ -96,18 +96,16 @@ class UpdatesLog {
    * @param array<string, string> $statuses
    *   An associative array of ['module_name' => 'status_string'].
    */
-  function Log(array $statuses): void {
+  public function Log(array $statuses): void {
     $logger = \Drupal::logger('updates_log');
-    foreach ($statuses as $key => $status) {
-      $message = [
-        'project' => $key,
-        'status' => $status,
-      ];
-      // It is problematic to get JSON logged.
-      // https://stackoverflow.com/a/67669934/1602728
+    foreach ($statuses as $project => $status) {
+      // Drupal logging cannot handle json in any way.
       $logger->info(
-        "{json}",
-        $message
+        "(\"project\":\"@project\",\"status\":\"@status\")",
+        [
+          '@project' => $project,
+          '@status' => $status,
+        ]
       );
     }
   }
@@ -122,6 +120,14 @@ class UpdatesLog {
    * Ripped from update_cron().
    */
   public function Refresh(): void {
+
+    if (!empty(getenv('TESTING'))) {
+      // We cannot boot properly from external script.
+      // It corrupts the database.
+      // See notes in init.php.
+      return;
+    }
+
     update_refresh();
     update_fetch_data();
     update_clear_update_disk_cache();

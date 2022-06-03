@@ -1,13 +1,17 @@
 <?php
 
 /*
-* This is an alternative way of booting:
-* https://hibern8.wordpress.com/2018/09/25/drupal-8-bootstrap-from-external-script/
-* The problem still exists is this:
-* if drupal is boostrapped by en external script (phpunit)
-* then certian functions
-* (update_refresh(), update_fetch_data(), update_clear_update_disk_cache())
-* mess up the db().
+* We have a problem with bootstrapping.
+*
+* If Drupal is boostrapped by en external script (phpunit)
+* then execution of update_refresh()
+* messes up the database.
+* The projects' information cannot be updated anymore,
+* neither manually or programmatically.
+*
+* Possible alternatives:
+* * https://hibern8.wordpress.com/2018/09/25/drupal-8-bootstrap-from-external-script/
+* * Rip off from from Drush
 */
 
 use Drupal\Core\DrupalKernel;
@@ -34,11 +38,6 @@ if (empty(getenv('TESTING'))) {
   // Need to set manually.
   // Otherwise update_get_available() fails.
   $container->get('request_stack')->push($request);
-
-  // Define DRUPAL_ROOT if it's not yet defined by bootstrap.
-  if (!defined('DRUPAL_ROOT')) {
-    define('DRUPAL_ROOT', getcwd());
-  }
 
   // Drupal boot() does not load modules.
   // Need to load them manually.

@@ -16,6 +16,9 @@ services:
     type: mariadb:10.6
 
 tooling:
+  drush:
+    service: appserver
+    cmd: /app/drupal/vendor/bin/drush
   install:
     service: appserver
     cmd: /app/.lando/cmd-install

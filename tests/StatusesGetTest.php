@@ -6,7 +6,7 @@ use \PHPUnit\Framework\TestCase;
 /**
  * @coversDefaultClass \Drupal\updats_log\UpdatesLog
  */
-class GetStatusesTest extends TestCase {
+class StatusesGetTest extends TestCase {
 
   /**
    * @covers ::StatusesGet
