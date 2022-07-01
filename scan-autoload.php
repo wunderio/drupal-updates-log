@@ -27,5 +27,7 @@ require_once '/app/drupal/web/core/lib/Drupal/Core/Config/StorableConfigBase.php
 require_once '/app/drupal/web/core/lib/Drupal/Core/Config/Config.php';
 require_once '/app/drupal/web/core/lib/Drupal/Core/Config/ImmutableConfig.php';
 
-require_once 'drupal/web/core/modules/update//update.compare.inc';
-require_once 'drupal/web/core/modules/update//update.module';
+require_once 'drupal/web/core/modules/update/update.compare.inc';
+require_once 'drupal/web/core/modules/update/update.module';
+
+require_once 'drupal/web/modules/custom/updates_log/src/UpdatesLog.php';

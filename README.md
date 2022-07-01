@@ -25,9 +25,9 @@ As an alternative there is Warden, but it lacks highly configurable alerting.
 On daily bases it logs module statuses like this:
 
 ```
- ---- -------------- ------------- ---------- -----------------------------------------
+ ---- -------------- ------------- ---------- ---------------------------------------------
   ID   Date           Type          Severity   Message
- ---- -------------- ------------- ---------- -----------------------------------------
+ ---- -------------- ------------- ---------- ---------------------------------------------
   68   03/Jun 16:34   updates_log   Info       ("project":"drupal","status":"CURRENT")
   69   03/Jun 16:34   updates_log   Info       ("project":"module1","status":"NOT_SECURE")
   70   03/Jun 16:34   updates_log   Info       ("project":"module2","status":"NOT_CURRENT")
@@ -47,6 +47,24 @@ Status codes are taken from the Drupal code:
   - `UNKNOWN`
   - `NOT_FETCHED`
   - `FETCH_PENDING`
+
+### Diff mode
+
+Diff mode allows to track changes, rather than having full status dumps.
+In `settings.php` add the following:
+
+```php
+$config['updates_log']['diff'] = TRUE;
+```
+
+It would produce following log:
+```
+ ---- -------------- ------------- ---------- --------------------------------------------------------
+  ID   Date           Type          Severity   Message
+ ---- -------------- ------------- ---------- --------------------------------------------------------
+  1    01/Jul 15:43   updates_log   Info       ("project":"drupal","old":"NOT_SECURE","new":"CURRENT")
+ ---- -------------- ------------- ---------- --------------------------------------------------------
+```
 
 ## Timing
 

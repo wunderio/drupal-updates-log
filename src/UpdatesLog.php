@@ -28,7 +28,18 @@ class UpdatesLog {
 
     $this->Refresh();
     $statuses = $this->StatusesGet();
-    $this->Log($statuses);
+    if ($this->isDiffMode()) {
+      $oldStatuses = $this->statusesLoad();
+      $diff = $this->computeDiff($statuses, $oldStatuses);
+      if (!empty($diff)) {
+        $this->LogDiff($diff);
+        $statuses2 = $this->statusesIntegrate($statuses, $oldStatuses);
+        $this->StatusesSave($statuses2);
+      }
+    }
+    else {
+      $this->LogPlain($statuses);
+    }
     $this->LastSet($now);
   }
 
@@ -54,6 +65,72 @@ class UpdatesLog {
     $status = $now !== $last;
 
     return $status;
+  }
+
+  /**
+   * Compute old and new status differences.
+   *
+   * @param array $new
+   *   New statuses.
+   * @param array $old
+   *   Old statuses.
+   *
+   * @return array
+   *   Statuses diff.
+   */
+  public function computeDiff(array $new, array $old): array {
+
+    $diff = [];
+
+    foreach ($new as $project => $status) {
+      if (!array_key_exists($project, $old)) {
+        $diff[$project] = [
+          'old' => '',
+          'new' => $status,
+        ];
+        goto next;
+      }
+      else if ($status == '???') {
+        goto next;
+      }
+      if ($old[$project] == $status) {
+        goto next;
+      }
+      $diff[$project] = [
+        'old' => $old[$project],
+        'new' => $status,
+      ];
+
+      next:
+      unset($old[$project]);
+    }
+
+    return $diff;
+  }
+
+  /**
+   * Integrate old and new statuses in a safe way.
+   *
+   * @param array $new
+   *   New statuses.
+   * @param array $old
+   *   Old statuses.
+   *
+   * @return array
+   *   Integrated statuses.
+   */
+  public function statusesIntegrate(array $new, array $old): array {
+
+    $int = [];
+
+    foreach ($new as $project => $status) {
+      if ($status == '???' && array_key_exists($project, $old)) {
+        $status = $old[$project];
+      }
+      $int[$project] = $status;
+    }
+
+    return $int;
   }
 
   /*
@@ -86,8 +163,29 @@ class UpdatesLog {
     \Drupal::state()->set('updates_log.last', $time);
   }
 
+  /**
+   * Save statuses.
+   *
+   * @param array $statuses
+   *   Statuses to save.
+   */
+  public function StatusesSave(array $statuses): void {
+    \Drupal::state()->set('updates_log.statuses', $statuses);
+  }
+
+  /**
+   * Get statuses of last time.
+   *
+   * @return array
+   *   Statuses of last time.
+   */
+  public function StatusesLoad(): array {
+    $statuses = \Drupal::state()->get('updates_log.statuses', []);
+    return $statuses;
+  }
+
   /*
-   * Storage
+   * Presentation
    */
 
   /**
@@ -96,7 +194,7 @@ class UpdatesLog {
    * @param array<string, string> $statuses
    *   An associative array of ['module_name' => 'status_string'].
    */
-  public function Log(array $statuses): void {
+  public function LogPlain(array $statuses): void {
     $logger = \Drupal::logger('updates_log');
     foreach ($statuses as $project => $status) {
       // Drupal logging cannot handle json in any way.
@@ -105,6 +203,27 @@ class UpdatesLog {
         [
           '@project' => $project,
           '@status' => $status,
+        ]
+      );
+    }
+  }
+
+  /**
+   * Log the modules, and statuses.
+   *
+   * @param array<string, array<string, string>> $statuses
+   *   An associative array of ['module_name' => ['old' => 'status_string', 'new' => 'status_string']].
+   */
+  public function LogDiff(array $statuses): void {
+    $logger = \Drupal::logger('updates_log');
+    foreach ($statuses as $project => $status) {
+      // Drupal logging cannot handle json in any way.
+      $logger->info(
+        "(\"project\":\"@project\",\"old\":\"@old\",\"new\":\"@new\")",
+        [
+          '@project' => $project,
+          '@new' => $status['new'],
+          '@old' => $status['old'],
         ]
       );
     }
@@ -167,11 +286,30 @@ class UpdatesLog {
     $statuses = [];
     foreach ($project_data as $key => $data) {
       $status = $data['status'];
-      $status = empty($map[$status]) ? '???' : $map[$status];
+      if ($status < 0) {
+        $status = '???';
+      }
+      else if (empty($map[$status])) {
+        $status = '???';
+      }
+      else {
+        $status = $map[$status];
+      }
       $statuses[$key] = $status;
     }
 
     return $statuses;
+  }
+
+  /**
+   * Check if need to run in diff mode.
+   *
+   * @return bool
+   *   True if diff mode, false otherwise.
+   */
+  public function isDiffMode(): bool {
+    $diff = (bool) \Drupal::config('updates_log')->get('diff');
+    return $diff;
   }
 
 }
