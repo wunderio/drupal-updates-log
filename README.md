@@ -66,6 +66,9 @@ It would produce following log:
  ---- -------------- ------------- ---------- --------------------------------------------------------
 ```
 
+`old` and `new` denote statuses.
+Respectively old status, and new status.
+
 ## Timing
 
 Essentially two date strings are compared in format of `YYYYMMDD`.
