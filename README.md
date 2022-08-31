@@ -50,7 +50,7 @@ Status codes are taken from the Drupal code:
 
 ### Diff mode
 
-Diff mode allows to track changes, rather than having full status dumps.
+Diff mode allows to track changes, rather than having full status dumps all the time.
 In `settings.php` add the following:
 
 ```php
@@ -84,6 +84,8 @@ It is needed for deciding when to send out the next batch of logs.
 
 - `drush sget updates_log.last`
 - `drush sset updates_log.last 1654253832`
+
+When running in diff mode the status is kept in the state variable `updates_log.statuses`.
 
 ## Development of `updates_log`
 
