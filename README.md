@@ -17,12 +17,12 @@ As an alternative there is Warden, but it lacks highly configurable alerting.
 
 ## Install
 
-- Install the module: `composer require wunderio/updates_log:^1`
-- [Enable Diff mode if needed](#diff-mode)
-- Enable the module: `drush en -y updates_log`
-- Optional: By using [Config Split](https://www.drupal.org/project/config_split) keep module enabled only in the default branch (`main` or `master`).
-- When using [Elysia Cron](https://www.drupal.org/project/elysia_cron), configure the module's cron hook to run once per day.
-- NB! In diff mode there will be nothing in logs immediately, and maybe even not in coming weeks, unless any of the packages change state.
+1. Install the module: `composer require wunderio/updates_log:^1`
+1. [Enable Diff mode if needed](#diff-mode)
+1. Enable the module: `drush en -y updates_log`
+1. Optional: By using [Config Split](https://www.drupal.org/project/config_split) keep module enabled only in the default branch (`main` or `master`).
+1. When using [Elysia Cron](https://www.drupal.org/project/elysia_cron), configure the module's cron hook to run once per day.
+1. NB! In diff mode there will be nothing in logs immediately, and maybe even not in coming weeks, unless any of the packages change state.
 
 ## Usage
 
