@@ -17,10 +17,12 @@ As an alternative there is Warden, but it lacks highly configurable alerting.
 
 ## Install
 
-1. Install the module: `composer require wunderio/updates_log:^1`
-2. [Enable Diff mode if needed](#diff-mode)
-3. Enable the module: `drush en -y updates_log`
-4. Check the logs on daily bases.
+- Install the module: `composer require wunderio/updates_log:^1`
+- [Enable Diff mode if needed](#diff-mode)
+- Enable the module: `drush en -y updates_log`
+- Optional: By using [Config Split](https://www.drupal.org/project/config_split) keep module enabled only in the default branch (`main` or `master`).
+- When using [Elysia Cron](https://www.drupal.org/project/elysia_cron), configure the module's cron hook to run once per day.
+- NB! In diff mode there will be nothing in logs immediately, and maybe even not in coming weeks, unless any of the packages change state.
 
 ## Usage
 
@@ -64,18 +66,20 @@ It would produce following log:
  ---- -------------- ------------- ---------- --------------------------------------------------------
   ID   Date           Type          Severity   Message
  ---- -------------- ------------- ---------- --------------------------------------------------------
-  1    01/Jul 15:43   updates_log   Info       ("project":"drupal","old":"NOT_SECURE","new":"CURRENT")
+  1    01/Jul 15:43   updates_log   Info       ("project":"drupal","old":"CURRENT","new":"NOT_SECURE")
  ---- -------------- ------------- ---------- --------------------------------------------------------
 ```
 
 `old` and `new` denote statuses.
 Respectively old status, and new status.
+The above log can be understood like this: `drupal` package was up-to-date yesterday, changed its status during last 24h (security update was released), so the status changed from yesterday's `CURRENT` to today's `NOT_SECURE`.
 
 ## Timing
 
 Essentially two date strings are compared in format of `YYYYMMDD`.
 If last datestamp and current one differ, the logs are issued.
 The dates are generated according to the local time.
+Therefore every first cron run of the day will trigger messages.
 
 ## State
 
