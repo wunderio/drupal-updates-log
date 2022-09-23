@@ -18,7 +18,7 @@ As an alternative there is Warden, but it lacks highly configurable alerting.
 ## Install
 
 1. Install the module: `composer require wunderio/updates_log:^1`
-2. [Enable Diff mode if needed](#Diff mode)
+2. [Enable Diff mode if needed](#diff-mode)
 3. Enable the module: `drush en -y updates_log`
 
 ## Usage
