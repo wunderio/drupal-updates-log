@@ -47,10 +47,10 @@ Status codes are taken from the Drupal code:
   - `CURRENT`
 
 - `web/core/modules/update/src/UpdateFetcherInterface.php`
-  - `NOT_CHECKED`
-  - `UNKNOWN`
-  - `NOT_FETCHED`
-  - `FETCH_PENDING`
+  - `???` (`NOT_CHECKED`)
+  - `???` (`UNKNOWN`)
+  - `???` (`NOT_FETCHED`)
+  - `???` (`FETCH_PENDING`)
 
 ### Diff mode
 
