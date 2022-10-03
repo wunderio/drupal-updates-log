@@ -13,7 +13,7 @@ class StatusesGetTest extends TestCase {
    */
   public function testStructure(): void {
     $m = new UpdatesLog();
-    $statuses = $m->StatusesGet();
+    $statuses = $m->statusesGet();
     $expected = [
       'drupal' => 'CURRENT',
     ];

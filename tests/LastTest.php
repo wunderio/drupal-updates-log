@@ -14,8 +14,8 @@ class LastTest extends TestCase {
    */
   public function testNull(): void {
     $m = new UpdatesLog();
-    $m->LastSet(NULL);
-    $timestamp = $m->LastGet();
+    $m->lastSet(NULL);
+    $timestamp = $m->lastGet();
     $this->assertNull($timestamp);
   }
 
@@ -26,8 +26,8 @@ class LastTest extends TestCase {
   public function testNumeric(): void {
     $m = new UpdatesLog();
     $now = time();
-    $m->LastSet($now);
-    $timestamp = $m->LastGet();
+    $m->lastSet($now);
+    $timestamp = $m->lastGet();
     $this->assertIsInt($timestamp);
     $this->assertEquals($now, $timestamp);
   }

@@ -15,15 +15,15 @@ class StatusesLoadSaveTest extends TestCase {
   public function testStatusesLoadSave(): void {
 
     $m = new UpdatesLog();
-    
+
     \Drupal::state()->delete('updates_log.statuses');
 
-    $statuses = $m->StatusesLoad();
+    $statuses = $m->statusesLoad();
     $this->assertEquals([], $statuses);
 
     $statuses = ['x' => 'y'];
-    $m->StatusesSave($statuses);
-    $statuses2 = $m->StatusesLoad();
+    $m->statusesSave($statuses);
+    $statuses2 = $m->statusesLoad();
     $this->assertEquals($statuses, $statuses2);
 
     \Drupal::state()->delete('updates_log.statuses');

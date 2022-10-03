@@ -13,7 +13,7 @@ class RunTest extends TestCase {
    */
   public function testCrash(): void {
     $m = new UpdatesLog();
-    $m->Run();
+    $m->run();
     $this->assertTrue(TRUE);
   }
 

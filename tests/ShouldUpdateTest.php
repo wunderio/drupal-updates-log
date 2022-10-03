@@ -13,7 +13,7 @@ class ShouldUpdateTest extends TestCase {
    */
   public function testFirstTime(): void {
     $m = new UpdatesLog();
-    $status = $m->ShouldUpdate(time(), NULL);
+    $status = $m->shouldUpdate(time(), NULL);
     $this->assertTrue($status);
   }
 
@@ -22,7 +22,7 @@ class ShouldUpdateTest extends TestCase {
    */
   public function testImmediately(): void {
     $m = new UpdatesLog();
-    $status = $m->ShouldUpdate(time(), time() + 1);
+    $status = $m->shouldUpdate(time(), time() + 1);
     $this->assertFalse($status);
   }
 
@@ -31,7 +31,7 @@ class ShouldUpdateTest extends TestCase {
    */
   public function testLater(): void {
     $m = new UpdatesLog();
-    $status = $m->ShouldUpdate(time(), time() - 24 * 60 * 60);
+    $status = $m->shouldUpdate(time(), time() - 24 * 60 * 60);
     $this->assertTrue($status);
   }
 

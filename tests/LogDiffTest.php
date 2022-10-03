@@ -18,7 +18,7 @@ class LogDiffTest extends TestCase {
     $m = new UpdatesLog();
     $database = \Drupal::database();
     $database->truncate('watchdog')->execute();
-    $m->LogDiff($statuses);
+    $m->logDiff($statuses);
     $query = $database->query("select * from {watchdog}");
     $result = $query->fetchAll();
     $log = reset($result);
