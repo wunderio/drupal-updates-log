@@ -22,7 +22,7 @@ class UpdatesLog {
 
     $now = time();
     $last = $this->LastGet();
-    if (!$this->ShouldUpdate($now, $last)) {
+    if (!$this->ultimateControl() && !$this->ShouldUpdate($now, $last)) {
       return;
     }
 
@@ -312,4 +312,12 @@ class UpdatesLog {
     return $diff;
   }
 
+  /**
+   * Check if running frequency should be controlled by cron job.
+   *
+   * @return bool
+   */
+  public function ultimateControl():bool {
+    return (bool) \Drupal::config('updates_log')->get('ultimate_control');
+  }
 }
