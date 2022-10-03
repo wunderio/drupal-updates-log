@@ -100,3 +100,9 @@ When running in diff mode the status is kept in the state variable `updates_log.
 - `lando start` - Start up the development environment
 - `lando test` - Run tests during/after development and before committing.
 
+# Debugging - What to do when you dont see expexted results?
+
+- Check the status at "Available updates" report. Is it red or green?
+- Run this `drush eval '$available = update_get_available(TRUE); $project_data = update_calculate_project_data($available); var_dump($project_data);'`
+- Run this `drush sget updates_log.statuses` (When running in diff mode)
+- Run this `drush sget updates_log.last`
