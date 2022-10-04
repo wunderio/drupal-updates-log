@@ -113,5 +113,5 @@ When running in diff mode the status is kept in the state variable `updates_log.
 
 - Check the status at "Available updates" report. Is it red or green?
 - Run this `drush eval '$available = update_get_available(TRUE); $project_data = update_calculate_project_data($available); var_dump($project_data);'`
-- Run this `drush sget updates_log.statuses` (When running in diff mode)
+- Run this `drush sget updates_log.statuses --format=json` (When running in diff mode)
 - Run this `drush sget updates_log.last`
