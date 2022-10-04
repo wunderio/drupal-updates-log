@@ -104,9 +104,9 @@ When running in diff mode the status is kept in the state variable `updates_log.
 
 ## Development of `updates_log`
 
+- `lando start` - Start up the development environment
 - `lando install` - Install development packages of the module.
 - `lando scan` - Run code scanners after development and before committing.
-- `lando start` - Start up the development environment
 - `lando test` - Run tests during/after development and before committing.
 
 ## Debugging - What to do when you dont see expexted results?
