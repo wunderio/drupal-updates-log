@@ -18,7 +18,7 @@ class LogPlainTest extends TestCase {
     $m = new UpdatesLog();
     $database = \Drupal::database();
     $database->truncate('watchdog')->execute();
-    $m->LogPlain($statuses);
+    $m->logPlain($statuses);
     $query = $database->query("select * from {watchdog}");
     $result = $query->fetchAll();
     $log = reset($result);

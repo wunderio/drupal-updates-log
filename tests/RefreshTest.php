@@ -13,7 +13,7 @@ class RefreshTest extends TestCase {
    */
   public function testCrash(): void {
     $m = new UpdatesLog();
-    $m->Refresh();
+    $m->refresh();
     $this->assertTrue(TRUE);
   }
 
