@@ -19,7 +19,7 @@ class HookTest extends TestCase {
   public function testCrash(): void {
 
     $m = new UpdatesLog();
-    $m->LastSet(NULL);
+    $m->lastSet(NULL);
 
     // Make sure we wont crash.
     updates_log_cron();

@@ -18,43 +18,43 @@ class UpdatesLog {
   /**
    * The top-level logic of the module.
    */
-  public function Run(): void {
+  public function run(): void {
 
     $now = time();
-    $last = $this->LastGet();
-    if (!$this->ultimateControl() && !$this->ShouldUpdate($now, $last)) {
+    $last = $this->lastGet();
+    if (!$this->ultimateControl() && !$this->shouldUpdate($now, $last)) {
       return;
     }
 
-    $this->Refresh();
-    $statuses = $this->StatusesGet();
+    $this->refresh();
+    $statuses = $this->statusesGet();
     if ($this->isDiffMode()) {
       $oldStatuses = $this->statusesLoad();
       $diff = $this->computeDiff($statuses, $oldStatuses);
       if (!empty($diff)) {
-        $this->LogDiff($diff);
+        $this->logDiff($diff);
         $statuses2 = $this->statusesIntegrate($statuses, $oldStatuses);
-        $this->StatusesSave($statuses2);
+        $this->statusesSave($statuses2);
       }
     }
     else {
-      $this->LogPlain($statuses);
+      $this->logPlain($statuses);
     }
-    $this->LastSet($now);
+    $this->lastSet($now);
   }
 
   /**
-   * Decides wether it's time for logging.
+   * Decides whether it's time for logging.
    *
    * @param int $now
    *   The epoch timestamp of the now.
    * @param int $last
-   *   Last report time (spoch seconds).
+   *   Last report time (epoch seconds).
    *
    * @return bool
    *   False = don't update. True = do update.
    */
-  public function ShouldUpdate(int $now, ?int $last): bool {
+  public function shouldUpdate(int $now, ?int $last): bool {
 
     if (empty($last)) {
       return TRUE;
@@ -143,23 +143,23 @@ class UpdatesLog {
    * @return int
    *   Return int of last update time, or NULL when first time.
    */
-  public function LastGet(): ?int {
-  
+  public function lastGet(): ?int {
+
     /** @var ?mixed */
     $last = \Drupal::state()->get('updates_log.last');
-  
+
     $last = empty($last) ? NULL : intval($last);
-  
+
     return $last;
   }
-  
+
   /**
    * Set the last update time.
    *
    * @param int $time
    *   Set update last time logged.
    */
-  public function LastSet(?int $time): void {
+  public function lastSet(?int $time): void {
     \Drupal::state()->set('updates_log.last', $time);
   }
 
@@ -169,7 +169,7 @@ class UpdatesLog {
    * @param array $statuses
    *   Statuses to save.
    */
-  public function StatusesSave(array $statuses): void {
+  public function statusesSave(array $statuses): void {
     \Drupal::state()->set('updates_log.statuses', $statuses);
   }
 
@@ -179,9 +179,8 @@ class UpdatesLog {
    * @return array
    *   Statuses of last time.
    */
-  public function StatusesLoad(): array {
-    $statuses = \Drupal::state()->get('updates_log.statuses', []);
-    return $statuses;
+  public function statusesLoad(): array {
+    return \Drupal::state()->get('updates_log.statuses', []);
   }
 
   /*
@@ -194,7 +193,7 @@ class UpdatesLog {
    * @param array<string, string> $statuses
    *   An associative array of ['module_name' => 'status_string'].
    */
-  public function LogPlain(array $statuses): void {
+  public function logPlain(array $statuses): void {
     $logger = \Drupal::logger('updates_log');
     foreach ($statuses as $project => $status) {
       // Drupal logging cannot handle json in any way.
@@ -214,7 +213,7 @@ class UpdatesLog {
    * @param array<string, array<string, string>> $statuses
    *   An associative array of ['module_name' => ['old' => 'status_string', 'new' => 'status_string']].
    */
-  public function LogDiff(array $statuses): void {
+  public function logDiff(array $statuses): void {
     $logger = \Drupal::logger('updates_log');
     foreach ($statuses as $project => $status) {
       // Drupal logging cannot handle json in any way.
@@ -238,7 +237,7 @@ class UpdatesLog {
    *
    * Ripped from update_cron().
    */
-  public function Refresh(): void {
+  public function refresh(): void {
 
     if (!empty(getenv('TESTING'))) {
       // We cannot boot properly from external script.
@@ -258,7 +257,7 @@ class UpdatesLog {
    * @return array<string, string>
    *   Return array of ['module_name' => 'status_string'].
    */
-  public function StatusesGet(): array {
+  public function statusesGet(): array {
 
     $map = [
 
@@ -308,8 +307,7 @@ class UpdatesLog {
    *   True if diff mode, false otherwise.
    */
   public function isDiffMode(): bool {
-    $diff = (bool) \Drupal::config('updates_log')->get('diff');
-    return $diff;
+    return (bool) \Drupal::config('updates_log')->get('diff');
   }
 
   /**
