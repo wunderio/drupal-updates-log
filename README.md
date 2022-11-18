@@ -22,6 +22,7 @@ As an alternative there is Warden, but it lacks highly configurable alerting.
 1. Enable the module: `drush en -y updates_log`
 1. Optional: By using [Config Split](https://www.drupal.org/project/config_split) keep module enabled only in the default branch (`main` or `master`).
 1. When using [Elysia Cron](https://www.drupal.org/project/elysia_cron), configure the module's cron hook to run once per day.
+1. Export the configuration: `drush cex -y`
 1. NB! In diff mode there will be nothing in logs immediately, and maybe even not in coming weeks, unless any of the packages change state.
 
 ## Usage
