@@ -18,7 +18,7 @@ cat <<TXT
 Drupal cannot be installed at the top level.
 It causes two problems:
 1. Branches cannot be switched easily
-2. Breaks PhpUnit tests - some Dupal stuff gets autoloaded and executed before tests run
+2. Breaks PhpUnit tests - some Drupal stuff gets autoloaded and executed before tests run
 TXT
 echo -e '\e[0m'
 
