@@ -31,6 +31,7 @@ chmod 755 "$public"
 mkdir -p "$mod"
 ln -s /app/updates_log.info.yml "$mod/"
 ln -s /app/updates_log.module "$mod/"
+ln -s /app/updates_log.services.yml "$mod/"
 ln -s /app/src "$mod/"
 
 mkdir -p "$default"

@@ -15,6 +15,6 @@ use Drupal\updates_log\UpdatesLog;
  * Log module statuses when necessary.
  */
 function updates_log_cron(): void {
-  $module = new UpdatesLog();
-  $module->run();
+  $logger = \Drupal::service('updates_log.updates_logger');
+  $logger->run();
 }
