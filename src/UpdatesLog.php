@@ -67,6 +67,10 @@ class UpdatesLog {
       $new_statuses = $this->statusesIntegrate($statuses);
       $this->state->set(self::STATUSES_STATE, $new_statuses);
     }
+    if ($now <= $this->lastRan + (60 * 60 * 24)) {
+      $statistics = $this->generateStatistics($statuses);
+      $this->logStatistics($statistics);
+    }
     $this->state->set(self::TIME_STATE, $now);
   }
 
@@ -100,7 +104,8 @@ class UpdatesLog {
 
     $diff = [];
 
-    foreach ($new as $project => $status) {
+    foreach ($new as $project => $data) {
+      $status = $data['status'];
       if (!array_key_exists($project, $this->lastStatuses)) {
         $diff[$project] = [
           'old' => '',
@@ -133,7 +138,8 @@ class UpdatesLog {
 
     $int = [];
 
-    foreach ($new as $project => $status) {
+    foreach ($new as $project => $data) {
+      $status = $data['status'];
       if ($status === '???' && array_key_exists($project, $this->lastStatuses)) {
         $status = $this->lastStatuses[$project];
       }
@@ -231,10 +237,42 @@ class UpdatesLog {
       else {
         $status = $map[$status];
       }
-      $statuses[$key] = $status;
+      $statuses[$key] = [
+        'status' => $status,
+        'version' => $data['existing_version'],
+      ];
     }
 
     return $statuses;
+  }
+
+  private function generateStatistics(array $statuses): array {
+    $statistics = [
+      "updates_log" => "2.0",
+      "summary" => [
+        "CURRENT" => 0,
+        "OUTDATED" => 0,
+        "NOT_SECURE" => 0,
+        "NOT_SUPPORTED" => 0,
+        "REVOKED" => 0,
+        "UNKNOWN" => 0,
+      ],
+      'details' => [],
+    ];
+    foreach ($statuses as $project => $data) {
+      $status = $data['status'];
+      $statistics['summary'][$status] += 1;
+      if ($status === 'CURRENT') {
+        continue;
+      }
+      $statistics['details'][$project] = $data;
+    }
+
+    return $statistics;
+  }
+
+  private function logStatistics($statistics) {
+    //ToDo
   }
 
 }
