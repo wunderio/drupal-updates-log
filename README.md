@@ -62,14 +62,6 @@ In `settings.php` add the following:
 $config['updates_log']['diff'] = TRUE;
 ```
 
-### Control the scheduling
-
-By default, module status is checked once a day. You can delegate this to cron for custom schedule.
-
-```php
-$config['updates_log']['ultimate_control'] = TRUE;
-```
-
 
 It would produce following log:
 ```

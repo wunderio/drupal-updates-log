@@ -22,23 +22,18 @@ class UpdatesLog {
 
     $now = time();
     $last = $this->lastGet();
-    if (!$this->ultimateControl() && !$this->shouldUpdate($now, $last)) {
+    if (!$this->shouldUpdate($now, $last)) {
       return;
     }
 
     $this->refresh();
     $statuses = $this->statusesGet();
-    if ($this->isDiffMode()) {
-      $oldStatuses = $this->statusesLoad();
-      $diff = $this->computeDiff($statuses, $oldStatuses);
-      if (!empty($diff)) {
-        $this->logDiff($diff);
-        $statuses2 = $this->statusesIntegrate($statuses, $oldStatuses);
-        $this->statusesSave($statuses2);
-      }
-    }
-    else {
-      $this->logPlain($statuses);
+    $oldStatuses = $this->statusesLoad();
+    $diff = $this->computeDiff($statuses, $oldStatuses);
+    if (!empty($diff)) {
+      $this->logDiff($diff);
+      $statuses2 = $this->statusesIntegrate($statuses, $oldStatuses);
+      $this->statusesSave($statuses2);
     }
     $this->lastSet($now);
   }
@@ -190,26 +185,6 @@ class UpdatesLog {
   /**
    * Log the modules, and statuses.
    *
-   * @param array<string, string> $statuses
-   *   An associative array of ['module_name' => 'status_string'].
-   */
-  public function logPlain(array $statuses): void {
-    $logger = \Drupal::logger('updates_log');
-    foreach ($statuses as $project => $status) {
-      // Drupal logging cannot handle json in any way.
-      $logger->info(
-        "(\"project\":\"@project\",\"status\":\"@status\")",
-        [
-          '@project' => $project,
-          '@status' => $status,
-        ]
-      );
-    }
-  }
-
-  /**
-   * Log the modules, and statuses.
-   *
    * @param array<string, array<string, string>> $statuses
    *   An associative array of ['module_name' => ['old' => 'status_string', 'new' => 'status_string']].
    */
@@ -298,24 +273,5 @@ class UpdatesLog {
     }
 
     return $statuses;
-  }
-
-  /**
-   * Check if need to run in diff mode.
-   *
-   * @return bool
-   *   True if diff mode, false otherwise.
-   */
-  public function isDiffMode(): bool {
-    return (bool) \Drupal::config('updates_log')->get('diff');
-  }
-
-  /**
-   * Check if running frequency should be controlled by cron job.
-   *
-   * @return bool
-   */
-  public function ultimateControl():bool {
-    return (bool) \Drupal::config('updates_log')->get('ultimate_control');
   }
 }
