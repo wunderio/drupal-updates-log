@@ -9,7 +9,25 @@ declare(strict_types = 1);
 
 namespace Drupal\updates_log;
 
+use Drupal\Core\Logger\LoggerChannelInterface;
+use Drupal\Core\State\State;
+
+
+
 class UpdatesLog {
+
+  CONST LAST_TIME_RAN = 'updates_log.last';
+  CONST LAST_STATUSES = 'updates_log.statuses';
+
+  private State $state;
+
+  private LoggerChannelInterface $loggerChannel;
+
+
+  public function __construct(State $state, LoggerChannelInterface $loggerChannel) {
+    $this->state = $state;
+    $this->loggerChannel = $loggerChannel;
+  }
 
   /*
    * Business Logic
@@ -21,8 +39,7 @@ class UpdatesLog {
   public function run(): void {
 
     $now = time();
-    $last = $this->lastGet();
-    if (!$this->shouldUpdate($now, $last)) {
+    if (!$this->shouldUpdate($now)) {
       return;
     }
 
@@ -35,7 +52,7 @@ class UpdatesLog {
       $statuses2 = $this->statusesIntegrate($statuses, $oldStatuses);
       $this->statusesSave($statuses2);
     }
-    $this->lastSet($now);
+    $this->state->set(self::LAST_TIME_RAN, $now);
   }
 
   /**
@@ -43,23 +60,17 @@ class UpdatesLog {
    *
    * @param int $now
    *   The epoch timestamp of the now.
-   * @param int $last
-   *   Last report time (epoch seconds).
    *
    * @return bool
    *   False = don't update. True = do update.
    */
-  public function shouldUpdate(int $now, ?int $last): bool {
-
-    if (empty($last)) {
+  public function shouldUpdate(int $now): bool {
+    $last = $this->state->get('updates_log.last');
+    if ($last === NULL) {
       return TRUE;
     }
-
-    $now = date('Ymd', $now);
-    $last = date('Ymd', $last);
-    $status = $now !== $last;
-
-    return $status;
+    // run every hour
+    return $now >= $last + (60 * 60);
   }
 
   /**
@@ -131,32 +142,6 @@ class UpdatesLog {
   /*
    * Storage
    */
-
-  /**
-   * Get the last update time.
-   *
-   * @return int
-   *   Return int of last update time, or NULL when first time.
-   */
-  public function lastGet(): ?int {
-
-    /** @var ?mixed */
-    $last = \Drupal::state()->get('updates_log.last');
-
-    $last = empty($last) ? NULL : intval($last);
-
-    return $last;
-  }
-
-  /**
-   * Set the last update time.
-   *
-   * @param int $time
-   *   Set update last time logged.
-   */
-  public function lastSet(?int $time): void {
-    \Drupal::state()->set('updates_log.last', $time);
-  }
 
   /**
    * Save statuses.
