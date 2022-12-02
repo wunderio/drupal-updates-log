@@ -5,30 +5,45 @@
  * Updates Log class.
  */
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Drupal\updates_log;
 
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Logger\LoggerChannelInterface;
 use Drupal\Core\State\State;
-
+use Drupal\update\UpdateManagerInterface;
+use Drupal\update\UpdateProcessorInterface;
 
 
 class UpdatesLog {
 
-  CONST LAST_TIME_RAN = 'updates_log.last';
-  CONST LAST_STATUSES = 'updates_log.statuses';
+  public const TIME_STATE = 'updates_log.last';
+
+  public const STATUSES_STATE = 'updates_log.statuses';
 
   private State $state;
 
   private LoggerChannelInterface $logger;
 
+  private ?array $lastStatuses;
 
-  public function __construct(State $state, LoggerChannelFactoryInterface $loggerChannelFactory) {
+  private ?int $lastRan;
+
+  private UpdateManagerInterface $updateManager;
+
+  private UpdateProcessorInterface $updateProcessor;
+
+
+  public function __construct(State $state, LoggerChannelFactoryInterface $loggerChannelFactory, UpdateManagerInterface $updateManager, UpdateProcessorInterface $updateProcessor) {
     $this->state = $state;
     $this->logger = $loggerChannelFactory->get('updates_log');
+    $this->updateManager = $updateManager;
+    $this->updateProcessor = $updateProcessor;
+    $this->lastStatuses = $state->get(self::STATUSES_STATE);
+    $this->lastRan = $state->get(self::TIME_STATE);
   }
+
 
   /*
    * Business Logic
@@ -46,14 +61,13 @@ class UpdatesLog {
 
     $this->refresh();
     $statuses = $this->statusesGet();
-    $oldStatuses = $this->statusesLoad();
-    $diff = $this->computeDiff($statuses, $oldStatuses);
+    $diff = $this->computeDiff($statuses);
     if (!empty($diff)) {
       $this->logDiff($diff);
-      $statuses2 = $this->statusesIntegrate($statuses, $oldStatuses);
-      $this->statusesSave($statuses2);
+      $new_statuses = $this->statusesIntegrate($statuses);
+      $this->state->set(self::STATUSES_STATE, $new_statuses);
     }
-    $this->state->set(self::LAST_TIME_RAN, $now);
+    $this->state->set(self::TIME_STATE, $now);
   }
 
   /**
@@ -66,12 +80,11 @@ class UpdatesLog {
    *   False = don't update. True = do update.
    */
   public function shouldUpdate(int $now): bool {
-    $last = $this->state->get('updates_log.last');
-    if ($last === NULL || getenv('UPDATES_LOG_TEST')) {
+    if ($this->lastRan === NULL || getenv('UPDATES_LOG_TEST')) {
       return TRUE;
     }
     // run every hour
-    return $now >= $last + (60 * 60);
+    return $now >= $this->lastRan + (60 * 60);
   }
 
   /**
@@ -79,37 +92,29 @@ class UpdatesLog {
    *
    * @param array $new
    *   New statuses.
-   * @param array $old
-   *   Old statuses.
    *
    * @return array
    *   Statuses diff.
    */
-  public function computeDiff(array $new, array $old): array {
+  public function computeDiff(array $new): array {
 
     $diff = [];
 
     foreach ($new as $project => $status) {
-      if (!array_key_exists($project, $old)) {
+      if (!array_key_exists($project, $this->lastStatuses)) {
         $diff[$project] = [
           'old' => '',
           'new' => $status,
         ];
-        goto next;
       }
-      else if ($status == '???') {
-        goto next;
+      elseif ($status !== '???' || $this->lastStatuses[$project] !== $status) {
+        $diff[$project] = [
+          'old' => $this->lastStatuses[$project],
+          'new' => $status,
+        ];
       }
-      if ($old[$project] == $status) {
-        goto next;
-      }
-      $diff[$project] = [
-        'old' => $old[$project],
-        'new' => $status,
-      ];
 
-      next:
-      unset($old[$project]);
+      unset($this->lastStatuses[$project]);
     }
 
     return $diff;
@@ -120,50 +125,23 @@ class UpdatesLog {
    *
    * @param array $new
    *   New statuses.
-   * @param array $old
-   *   Old statuses.
    *
    * @return array
    *   Integrated statuses.
    */
-  public function statusesIntegrate(array $new, array $old): array {
+  public function statusesIntegrate(array $new): array {
 
     $int = [];
 
     foreach ($new as $project => $status) {
-      if ($status == '???' && array_key_exists($project, $old)) {
-        $status = $old[$project];
+      if ($status === '???' && array_key_exists($project, $this->lastStatuses)) {
+        $status = $this->lastStatuses[$project];
       }
       $int[$project] = $status;
     }
 
     return $int;
   }
-
-  /*
-   * Storage
-   */
-
-  /**
-   * Save statuses.
-   *
-   * @param array $statuses
-   *   Statuses to save.
-   */
-  public function statusesSave(array $statuses): void {
-    \Drupal::state()->set('updates_log.statuses', $statuses);
-  }
-
-  /**
-   * Get statuses of last time.
-   *
-   * @return array
-   *   Statuses of last time.
-   */
-  public function statusesLoad(): array {
-    return \Drupal::state()->get('updates_log.statuses', []);
-  }
-
   /*
    * Presentation
    */
@@ -172,13 +150,13 @@ class UpdatesLog {
    * Log the modules, and statuses.
    *
    * @param array<string, array<string, string>> $statuses
-   *   An associative array of ['module_name' => ['old' => 'status_string', 'new' => 'status_string']].
+   *   An associative array of ['module_name' => ['old' => 'status_string',
+   *   'new' => 'status_string']].
    */
   public function logDiff(array $statuses): void {
-    $logger = \Drupal::logger('updates_log');
     foreach ($statuses as $project => $status) {
       // Drupal logging cannot handle json in any way.
-      $logger->info(
+      $this->logger->info(
         "(\"project\":\"@project\",\"old\":\"@old\",\"new\":\"@new\")",
         [
           '@project' => $project,
@@ -206,9 +184,8 @@ class UpdatesLog {
       // See notes in init.php.
       return;
     }
-
-    update_refresh();
-    update_fetch_data();
+    $this->updateManager->refreshUpdateData();
+    $this->updateProcessor->fetchData();
     update_clear_update_disk_cache();
   }
 
@@ -236,10 +213,9 @@ class UpdatesLog {
       -4 => 'FETCH_PENDING',
     ];
 
-    /** @var array<mixed> */
     $available = update_get_available(TRUE);
 
-    /** @var array<string, array{status: int}> */
+    /** @var array<string, array{status: int}> $available */
     $project_data = update_calculate_project_data($available);
 
     ksort($project_data);
@@ -249,7 +225,7 @@ class UpdatesLog {
       if ($status < 0) {
         $status = '???';
       }
-      else if (empty($map[$status])) {
+      elseif (empty($map[$status])) {
         $status = '???';
       }
       else {
@@ -260,4 +236,5 @@ class UpdatesLog {
 
     return $statuses;
   }
+
 }
