@@ -9,6 +9,7 @@ declare(strict_types = 1);
 
 namespace Drupal\updates_log;
 
+use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Logger\LoggerChannelInterface;
 use Drupal\Core\State\State;
 
@@ -21,12 +22,12 @@ class UpdatesLog {
 
   private State $state;
 
-  private LoggerChannelInterface $loggerChannel;
+  private LoggerChannelInterface $logger;
 
 
-  public function __construct(State $state, LoggerChannelInterface $loggerChannel) {
+  public function __construct(State $state, LoggerChannelFactoryInterface $loggerChannelFactory) {
     $this->state = $state;
-    $this->loggerChannel = $loggerChannel;
+    $this->logger = $loggerChannelFactory->get('updates_log');
   }
 
   /*
@@ -66,7 +67,7 @@ class UpdatesLog {
    */
   public function shouldUpdate(int $now): bool {
     $last = $this->state->get('updates_log.last');
-    if ($last === NULL) {
+    if ($last === NULL || getenv('UPDATES_LOG_TEST')) {
       return TRUE;
     }
     // run every hour
