@@ -23,7 +23,13 @@
         "phpunit/phpunit": "^9"
     },
     "require": {
-        "php": ">=7.4",
+        "php": ">=8.0",
         "drupal/core": "^8 || ^9"
+    },
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true,
+            "phpro/grumphp": true
+        }
     }
 }
