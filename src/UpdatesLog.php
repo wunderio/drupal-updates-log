@@ -130,9 +130,9 @@ class UpdatesLog {
           'new' => $status,
         ];
       }
-      elseif ($status !== '???' || $this->lastStatuses[$project] !== $status) {
+      elseif ($status !== '???' || $this->lastStatuses[$project]['status'] !== $status) {
         $diff[$project] = [
-          'old' => $this->lastStatuses[$project],
+          'old' => $this->lastStatuses[$project]['status'],
           'new' => $status,
         ];
       }
