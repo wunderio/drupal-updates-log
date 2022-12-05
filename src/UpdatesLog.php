@@ -26,9 +26,26 @@ class UpdatesLog {
 
   private LoggerChannelInterface $logger;
 
+  /**
+   * Last updates_log result.
+   *
+   * @var array|null
+   */
   private ?array $lastStatuses;
 
+  /**
+   * Last time updates_log was ran.
+   *
+   * @var int|null
+   */
   private ?int $lastRan;
+
+  /**
+   * Last time updates were checked.
+   *
+   * @var int
+   */
+  private int $lastUpdated;
 
   private UpdateManagerInterface $updateManager;
 
@@ -42,6 +59,7 @@ class UpdatesLog {
     $this->updateProcessor = $updateProcessor;
     $this->lastStatuses = $state->get(self::STATUSES_STATE);
     $this->lastRan = $state->get(self::TIME_STATE);
+    $this->lastUpdated = $state->get('update.last_check', 0);
   }
 
 
@@ -249,6 +267,9 @@ class UpdatesLog {
   private function generateStatistics(array $statuses): array {
     $statistics = [
       "updates_log" => "2.0",
+      "last_check_epoch" => $this->lastUpdated,
+      "last_check_human" => date('Y-m-dTh:i:s', $this->lastUpdated),
+      "last_check_ago" => time() - $this->lastUpdated,
       "summary" => [
         "CURRENT" => 0,
         "OUTDATED" => 0,
