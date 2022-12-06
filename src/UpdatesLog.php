@@ -11,7 +11,7 @@ namespace Drupal\updates_log;
 
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Logger\LoggerChannelInterface;
-use Drupal\Core\State\State;
+use Drupal\Core\State\StateInterface;
 use Drupal\update\UpdateManagerInterface;
 use Drupal\update\UpdateProcessorInterface;
 
@@ -22,26 +22,20 @@ class UpdatesLog {
 
   public const STATUSES_STATE = 'updates_log.statuses';
 
-  private State $state;
+  private StateInterface $state;
 
   private LoggerChannelInterface $logger;
-
-  private ?array $lastStatuses;
-
-  private ?int $lastRan;
 
   private UpdateManagerInterface $updateManager;
 
   private UpdateProcessorInterface $updateProcessor;
 
 
-  public function __construct(State $state, LoggerChannelFactoryInterface $loggerChannelFactory, UpdateManagerInterface $updateManager, UpdateProcessorInterface $updateProcessor) {
+  public function __construct(StateInterface $state, LoggerChannelFactoryInterface $loggerChannelFactory, UpdateManagerInterface $updateManager, UpdateProcessorInterface $updateProcessor) {
     $this->state = $state;
     $this->logger = $loggerChannelFactory->get('updates_log');
     $this->updateManager = $updateManager;
     $this->updateProcessor = $updateProcessor;
-    $this->lastStatuses = $state->get(self::STATUSES_STATE);
-    $this->lastRan = $state->get(self::TIME_STATE);
   }
 
 
@@ -61,13 +55,15 @@ class UpdatesLog {
 
     $this->refresh();
     $statuses = $this->statusesGet();
-    $diff = $this->computeDiff($statuses);
+    $old_statuses = $this->getLastStatuses();
+    $diff = $this->computeDiff($statuses, $old_statuses);
+
     if (!empty($diff)) {
       $this->logDiff($diff);
-      $new_statuses = $this->statusesIntegrate($statuses);
+      $new_statuses = $this->statusesIntegrate($statuses, $old_statuses);
       $this->state->set(self::STATUSES_STATE, $new_statuses);
     }
-    if ($now <= $this->lastRan + (60 * 60 * 24)) {
+    if ($now <= $this->getLastRan() + (60 * 60 * 24)) {
       $statistics = $this->generateStatistics($statuses);
       $this->logStatistics($statistics);
     }
@@ -84,11 +80,11 @@ class UpdatesLog {
    *   False = don't update. True = do update.
    */
   public function shouldUpdate(int $now): bool {
-    if ($this->lastRan === NULL || getenv('UPDATES_LOG_TEST')) {
+    if ($this->getLastRan() === NULL || getenv('UPDATES_LOG_TEST')) {
       return TRUE;
     }
     // run every hour
-    return $now >= $this->lastRan + (60 * 60);
+    return $now >= $this->getLastRan() + (60 * 60);
   }
 
   /**
@@ -100,28 +96,27 @@ class UpdatesLog {
    * @return array
    *   Statuses diff.
    */
-  public function computeDiff(array $new): array {
+  public function computeDiff(array $new, array $old): array {
 
     $diff = [];
 
     foreach ($new as $project => $data) {
       $status = $data['status'];
-      if (!array_key_exists($project, $this->lastStatuses)) {
+      if (!array_key_exists($project, $old)) {
         $diff[$project] = [
           'old' => '',
           'new' => $status,
         ];
       }
-      elseif ($status !== '???' || $this->lastStatuses[$project] !== $status) {
+      elseif ($status !== '???' && $old[$project]['status'] !== $status) {
         $diff[$project] = [
-          'old' => $this->lastStatuses[$project],
+          'old' => $old[$project]['status'],
           'new' => $status,
         ];
       }
 
-      unset($this->lastStatuses[$project]);
+      unset($old[$project]);
     }
-
     return $diff;
   }
 
@@ -134,14 +129,14 @@ class UpdatesLog {
    * @return array
    *   Integrated statuses.
    */
-  public function statusesIntegrate(array $new): array {
+  public function statusesIntegrate(array $new, array $old): array {
 
     $int = [];
 
     foreach ($new as $project => $data) {
       $status = $data['status'];
-      if ($status === '???' && array_key_exists($project, $this->lastStatuses)) {
-        $status = $this->lastStatuses[$project];
+      if ($status === '???' && array_key_exists($project, $old)) {
+        $status = $old[$project];
       }
       $int[$project] = $status;
     }
@@ -160,6 +155,7 @@ class UpdatesLog {
    *   'new' => 'status_string']].
    */
   public function logDiff(array $statuses): void {
+    // TODO do same JSON as statistics
     foreach ($statuses as $project => $status) {
       // Drupal logging cannot handle json in any way.
       $this->logger->info(
@@ -273,6 +269,16 @@ class UpdatesLog {
 
   private function logStatistics($statistics) {
     //ToDo
+  }
+
+  private function getLastRan()
+  {
+    return $this->state->get(self::TIME_STATE);
+  }
+
+  private function getLastStatuses()
+  {
+    return $this->state->get(self::STATUSES_STATE);
   }
 
 }
