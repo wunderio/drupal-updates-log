@@ -64,6 +64,7 @@ class UpdatesLog {
     $this->refresh();
     $statuses = $this->statusesGet();
     $old_statuses = $this->getLastStatuses();
+    //TODO CHECK TESTS
     $diff = $this->computeDiff($statuses, $old_statuses);
 
     if (!empty($diff)) {
@@ -116,9 +117,9 @@ class UpdatesLog {
           'new' => $status,
         ];
       }
-      elseif ($status !== '???' && $old[$project]['status'] !== $status) {
+      elseif ($status !== '???' && $old[$project] !== $status) {
         $diff[$project] = [
-          'old' => $old[$project]['status'],
+          'old' => $old[$project],
           'new' => $status,
         ];
       }
