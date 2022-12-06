@@ -257,7 +257,7 @@ class UpdatesLog {
       }
       $statuses[$key] = [
         'status' => $status,
-        'version' => $data['existing_version'],
+        'version_used' => $data['existing_version'],
       ];
     }
 
@@ -268,7 +268,7 @@ class UpdatesLog {
     $statistics = [
       "updates_log" => "2.0",
       "last_check_epoch" => $this->lastUpdated,
-      "last_check_human" => date('Y-m-dTh:i:s', $this->lastUpdated),
+      "last_check_human" => gmdate('Y-m-d\Th:i:sZT', $this->lastUpdated),
       "last_check_ago" => time() - $this->lastUpdated,
       "summary" => [
         "CURRENT" => 0,
@@ -282,7 +282,13 @@ class UpdatesLog {
     ];
     foreach ($statuses as $project => $data) {
       $status = $data['status'];
-      $statistics['summary'][$status] += 1;
+      if (array_key_exists($status, $statistics['summary'])) {
+        $statistics['summary'][$status] += 1;
+      }
+      else {
+        $statistics['summary']['UNKNOWN'] += 1;
+      }
+
       if ($status === 'CURRENT') {
         continue;
       }
@@ -292,8 +298,19 @@ class UpdatesLog {
     return $statistics;
   }
 
-  private function logStatistics($statistics) {
-    //ToDo
+  /**
+   * @param array $statistics
+   *
+   * @return void
+   */
+  private function logStatistics(array $statistics): void {
+    try {
+      $json = json_encode($statistics, JSON_THROW_ON_ERROR);
+    }
+    catch (\Exception $exception) {
+      $json = $exception->getMessage();
+    }
+    $this->logger->info('updates_log={placeholder}', ["placeholder" => $json]);
   }
 
 }
