@@ -38,7 +38,13 @@ class UpdatesLog {
   private UpdateProcessorInterface $updateProcessor;
 
 
-  public function __construct(StateInterface $state, LoggerChannelFactoryInterface $loggerChannelFactory, UpdateManagerInterface $updateManager, UpdateProcessorInterface $updateProcessor) {
+  public function __construct(
+    StateInterface                $state,
+    LoggerChannelFactoryInterface $loggerChannelFactory,
+    UpdateManagerInterface        $updateManager,
+    UpdateProcessorInterface      $updateProcessor
+  )
+  {
     $this->state = $state;
     $this->logger = $loggerChannelFactory->get('updates_log');
     $this->updateManager = $updateManager;
@@ -57,14 +63,15 @@ class UpdatesLog {
   public function run(): void {
 
     $now = time();
-    if (!$this->shouldUpdate($now)) {
+    $last = $this->getLastRan();
+    if (!$this->shouldUpdate($now, $last)) {
       return;
     }
 
     $this->refresh();
     $statuses = $this->statusesGet();
     $old_statuses = $this->getLastStatuses();
-    //TODO CHECK TESTS
+
     $diff = $this->computeDiff($statuses, $old_statuses);
 
     if (!empty($diff)) {
@@ -88,12 +95,12 @@ class UpdatesLog {
    * @return bool
    *   False = don't update. True = do update.
    */
-  public function shouldUpdate(int $now): bool {
-    if ($this->getLastRan() === NULL || getenv('UPDATES_LOG_TEST')) {
+  public function shouldUpdate(int $now, ?int $last): bool {
+    if ($last === NULL || getenv('UPDATES_LOG_TEST')) {
       return TRUE;
     }
     // run every hour
-    return $now >= $this->getLastRan() + (60 * 60);
+    return $now >= $last + (60 * 60);
   }
 
   /**
