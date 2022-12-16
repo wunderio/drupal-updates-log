@@ -41,7 +41,7 @@ class RunTest extends KernelTestBase {
   public function testCrash(): void {
     try {
       $this->service->run();
-      $this->assertTrue(True);
+      $this->assertTrue(TRUE);
     } catch (\Exception $exception) {
       $this->fail("Run failed with: " . $exception->getMessage());
     }

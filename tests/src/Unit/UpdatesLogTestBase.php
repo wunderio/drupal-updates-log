@@ -1,21 +1,22 @@
 <?php
+
 namespace Drupal\Tests\updates_log\Unit;
 
-use Drupal\Core\KeyValueStore\KeyValueFactoryInterface;
 use Drupal\Core\KeyValueStore\KeyValueMemoryFactory;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\State\State;
-use Drupal\Core\State\StateInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\update\UpdateManagerInterface;
 use Drupal\update\UpdateProcessorInterface;
 use Drupal\updates_log\UpdatesLog;
 use Prophecy\Argument;
-use Prophecy\Prophecy\ObjectProphecy;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
-
+/**
+ * @coversDefaultClass \Drupal\updates_log\UpdatesLog
+ * @group updates_log
+ */
 class UpdatesLogTestBase extends UnitTestCase {
 
   protected UpdatesLog $updates_log;
@@ -23,8 +24,7 @@ class UpdatesLogTestBase extends UnitTestCase {
   protected State $state;
 
 
-  protected function setUp() :void
-  {
+  protected function setUp(): void {
     parent::setUp();
     $this->state = new State(new KeyValueMemoryFactory());
 
@@ -39,7 +39,8 @@ class UpdatesLogTestBase extends UnitTestCase {
     $state->get('update.last_check', 0)->willReturn(time());
 
     $logger_factory = $this->prophesize(LoggerChannelFactoryInterface::class);
-    $logger_factory->get(Argument::exact('updates_log'))->willReturn($logger->reveal());
+    $logger_factory->get(Argument::exact('updates_log'))
+      ->willReturn($logger->reveal());
     $update_manager = $this->prophesize(UpdateManagerInterface::class);
     $update_processor = $this->prophesize(UpdateProcessorInterface::class);
 
@@ -49,8 +50,8 @@ class UpdatesLogTestBase extends UnitTestCase {
     \Drupal::getContainer()->set('state', $state);
 
 
-
     $this->updates_log = new UpdatesLog($state->reveal(), $logger_factory->reveal(), $update_manager->reveal(), $update_processor->reveal());
   }
+
 }
 

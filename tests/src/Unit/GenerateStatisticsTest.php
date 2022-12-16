@@ -4,12 +4,16 @@ namespace tests\src\Unit;
 
 use Drupal\Tests\updates_log\Unit\UpdatesLogTestBase;
 
+/**
+ * @coversDefaultClass \Drupal\updates_log\UpdatesLog
+ * @group updates_log
+ */
 class GenerateStatisticsTest extends UpdatesLogTestBase {
+
   /**
    * @covers ::generateStatistics
    */
-  public function testGenerateStatistics(): void
-  {
+  public function testGenerateStatistics(): void {
     $statistics = $this->updates_log->generateStatistics(
       [
         'x' => ['status' => 'NOT_CURRENT', 'version' => 'x'],
@@ -27,4 +31,5 @@ class GenerateStatisticsTest extends UpdatesLogTestBase {
     $this->assertCount(4, $statistics['details']);
 
   }
+
 }
