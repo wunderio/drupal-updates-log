@@ -43,8 +43,7 @@ class UpdatesLog {
     LoggerChannelFactoryInterface $loggerChannelFactory,
     UpdateManagerInterface        $updateManager,
     UpdateProcessorInterface      $updateProcessor
-  )
-  {
+  ) {
     $this->state = $state;
     $this->logger = $loggerChannelFactory->get('updates_log');
     $this->updateManager = $updateManager;
@@ -196,12 +195,6 @@ class UpdatesLog {
    */
   public function refresh(): void {
 
-    if (!empty(getenv('TESTING'))) {
-      // We cannot boot properly from external script.
-      // It corrupts the database.
-      // See notes in init.php.
-      return;
-    }
     $this->updateManager->refreshUpdateData();
     $this->updateProcessor->fetchData();
     update_clear_update_disk_cache();
@@ -258,7 +251,14 @@ class UpdatesLog {
     return $statuses;
   }
 
-  private function generateStatistics(array $statuses): array {
+  /**
+   * Generates "Statistics" of module states and verions.
+   *
+   * @param array $statuses
+   *
+   * @return array
+   */
+  public function generateStatistics(array $statuses): array {
     $statistics = [
       "updates_log" => "2.0",
       "last_check_epoch" => $this->lastUpdated,
@@ -266,6 +266,7 @@ class UpdatesLog {
       "last_check_ago" => time() - $this->lastUpdated,
       "summary" => [
         "CURRENT" => 0,
+        "NOT_CURRENT" => 0,
         "OUTDATED" => 0,
         "NOT_SECURE" => 0,
         "NOT_SUPPORTED" => 0,
@@ -297,24 +298,21 @@ class UpdatesLog {
    *
    * @return void
    */
-  private function logStatistics(array $statistics): void {
+  public function logStatistics(array $statistics): void {
     try {
       $json = json_encode($statistics, JSON_THROW_ON_ERROR);
-    }
-    catch (\Exception $exception) {
+    } catch (\Exception $exception) {
       $json = $exception->getMessage();
     }
     $this->logger->info('updates_log={placeholder}', ["placeholder" => $json]);
   }
 
-  private function getLastRan()
-  {
+  private function getLastRan(): ?int {
     return $this->state->get(self::TIME_STATE);
   }
 
-  private function getLastStatuses()
-  {
-    return $this->state->get(self::STATUSES_STATE);
+  private function getLastStatuses(): array {
+    return $this->state->get(self::STATUSES_STATE, []);
   }
 
 }
