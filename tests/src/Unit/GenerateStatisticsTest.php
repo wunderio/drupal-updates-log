@@ -14,7 +14,7 @@ class GenerateStatisticsTest extends UpdatesLogTestBase {
    * @covers ::generateStatistics
    */
   public function testGenerateStatistics(): void {
-    $statistics = $this->updates_log->generateStatistics(
+    $statistics = $this->updatesLog->generateStatistics(
       [
         'x' => ['status' => 'NOT_CURRENT', 'version' => 'x'],
         'y' => ['status' => 'OUTDATED', 'version' => 'x'],

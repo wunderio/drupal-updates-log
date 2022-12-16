@@ -14,7 +14,7 @@ class StatusesIntegrateTest extends UpdatesLogTestBase {
    * @covers ::statusesIntegrate
    */
   public function testStatusesIntegrateSame(): void {
-    $int = $this->updates_log->statusesIntegrate(
+    $int = $this->updatesLog->statusesIntegrate(
       ['x' => ['status' => 'x', 'version' => 'x']],
       ['x' => 'x']
     );
@@ -25,7 +25,7 @@ class StatusesIntegrateTest extends UpdatesLogTestBase {
    * @covers ::statusesIntegrate
    */
   public function testStatusesIntegrateChange(): void {
-    $int = $this->updates_log->statusesIntegrate(
+    $int = $this->updatesLog->statusesIntegrate(
       ['x' => ['status' => 'y', 'version' => 'x']],
       ['x' => 'x']
     );
@@ -36,7 +36,7 @@ class StatusesIntegrateTest extends UpdatesLogTestBase {
    * @covers ::statusesIntegrate
    */
   public function testStatusesIntegrateNew(): void {
-    $int = $this->updates_log->statusesIntegrate([
+    $int = $this->updatesLog->statusesIntegrate([
       'x' => [
         'status' => 'y',
         'version' => 'x',
@@ -49,7 +49,7 @@ class StatusesIntegrateTest extends UpdatesLogTestBase {
    * @covers ::statusesIntegrate
    */
   public function testStatusesIntegrateOld(): void {
-    $int = $this->updates_log->statusesIntegrate([], [
+    $int = $this->updatesLog->statusesIntegrate([], [
       'x' => [
         'status' => 'y',
         'version' => 'x',
@@ -62,7 +62,7 @@ class StatusesIntegrateTest extends UpdatesLogTestBase {
    * @covers ::statusesIntegrate
    */
   public function testStatusesIntegrateNewQ(): void {
-    $int = $this->updates_log->statusesIntegrate([
+    $int = $this->updatesLog->statusesIntegrate([
       'x' => [
         'status' => '???',
         'version' => 'x',
@@ -75,7 +75,7 @@ class StatusesIntegrateTest extends UpdatesLogTestBase {
    * @covers ::statusesIntegrate
    */
   public function testStatusesIntegrateChangeQ(): void {
-    $int = $this->updates_log->statusesIntegrate(
+    $int = $this->updatesLog->statusesIntegrate(
       ['x' => ['status' => '???', 'version' => 'x']],
       ['x' => 'x']
     );

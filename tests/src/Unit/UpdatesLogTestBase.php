@@ -19,7 +19,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
  */
 class UpdatesLogTestBase extends UnitTestCase {
 
-  protected UpdatesLog $updates_log;
+  protected UpdatesLog $updatesLog;
 
   protected State $state;
 
@@ -50,7 +50,7 @@ class UpdatesLogTestBase extends UnitTestCase {
     \Drupal::getContainer()->set('state', $state);
 
 
-    $this->updates_log = new UpdatesLog($state->reveal(), $logger_factory->reveal(), $update_manager->reveal(), $update_processor->reveal());
+    $this->updatesLog = new UpdatesLog($state->reveal(), $logger_factory->reveal(), $update_manager->reveal(), $update_processor->reveal());
   }
 
 }

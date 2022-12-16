@@ -14,7 +14,7 @@ class ComputeDiffTest extends UpdatesLogTestBase {
    * @covers ::computeDiff
    */
   public function testComputeDiffSame(): void {
-    $int = $this->updates_log->computeDiff(
+    $int = $this->updatesLog->computeDiff(
       ['x' => ['status' => 'x', 'version' => 'x']],
       ['x' => 'x']
     );
@@ -27,7 +27,7 @@ class ComputeDiffTest extends UpdatesLogTestBase {
    * @covers ::computeDiff
    */
   public function testComputeDiffChange(): void {
-    $int = $this->updates_log->computeDiff(
+    $int = $this->updatesLog->computeDiff(
       ['x' => ['status' => 'x', 'version' => 'x']],
       ['x' => 'y']
     );
@@ -38,7 +38,7 @@ class ComputeDiffTest extends UpdatesLogTestBase {
    * @covers ::computeDiff
    */
   public function testComputeDiffNew(): void {
-    $int = $this->updates_log->computeDiff([
+    $int = $this->updatesLog->computeDiff([
       'x' => [
         'status' => 'x',
         'version' => 'x',
@@ -51,7 +51,7 @@ class ComputeDiffTest extends UpdatesLogTestBase {
    * @covers ::computeDiff
    */
   public function testComputeDiffOld(): void {
-    $int = $this->updates_log->computeDiff([], ['x' => 'x']);
+    $int = $this->updatesLog->computeDiff([], ['x' => 'x']);
     $this->assertSame([], $int);
   }
 
@@ -59,7 +59,7 @@ class ComputeDiffTest extends UpdatesLogTestBase {
    * @covers ::computeDiff
    */
   public function testComputeDiffNewQ(): void {
-    $int = $this->updates_log->computeDiff([
+    $int = $this->updatesLog->computeDiff([
       'x' => [
         'status' => '???',
         'version' => 'x',
@@ -72,7 +72,7 @@ class ComputeDiffTest extends UpdatesLogTestBase {
    * @covers ::computeDiff
    */
   public function testComputeDiffChangeQ(): void {
-    $int = $this->updates_log->computeDiff(
+    $int = $this->updatesLog->computeDiff(
       ['x' => ['status' => '???', 'version' => 'x']],
       ['x' => 'x']
     );
