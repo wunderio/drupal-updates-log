@@ -84,19 +84,18 @@ class LogTest extends KernelTestBase {
       "summary" => [
         "CURRENT" => 2,
         "NOT_CURRENT" => 1,
-        "OUTDATED" => 1,
         "NOT_SECURE" => 0,
-        "NOT_SUPPORTED" => 0,
+        "NOT_SUPPORTED" => 1,
         "REVOKED" => 0,
         "UNKNOWN" => 1,
       ],
       'details' => [
-        'x' => ['status' => 'NOT_CURRENT', 'version' => 'x'],
-        'y' => ['status' => 'OUTDATED', 'version' => 'x'],
-        'z' => ['status' => 'NOT_SECURE', 'version' => 'x'],
-        'a' => ['status' => 'CURRENT', 'version' => 'x'],
-        'b' => ['status' => 'CURRENT', 'version' => 'x'],
-        'c' => ['status' => '???', 'version' => 'x'],
+        'x' => ['status' => 'NOT_CURRENT', 'version_used' => 'x'],
+        'y' => ['status' => 'NOT_SUPPORTED', 'version_used' => 'x'],
+        'z' => ['status' => 'NOT_SECURE', 'version_used' => 'x'],
+        'a' => ['status' => 'CURRENT', 'version_used' => 'x'],
+        'b' => ['status' => 'CURRENT', 'version_used' => 'x'],
+        'c' => ['status' => '???', 'version_used' => 'x'],
       ],
     ];
 
@@ -108,7 +107,7 @@ class LogTest extends KernelTestBase {
 
     $this->assertEquals('updates_log', $log->type);
     $this->assertEquals('updates_log=@placeholder', $log->message);
-    $this->assertEquals('a:1:{s:12:"@placeholder";s:475:"{"updates_log":"2.0","last_check_epoch":' . $time . ',"last_check_human":"' . gmdate('Y-m-d\Th:i:sZT', $time) . '","last_check_ago":1,"summary":{"CURRENT":2,"NOT_CURRENT":1,"OUTDATED":1,"NOT_SECURE":0,"NOT_SUPPORTED":0,"REVOKED":0,"UNKNOWN":1},"details":{"x":{"status":"NOT_CURRENT","version":"x"},"y":{"status":"OUTDATED","version":"x"},"z":{"status":"NOT_SECURE","version":"x"},"a":{"status":"CURRENT","version":"x"},"b":{"status":"CURRENT","version":"x"},"c":{"status":"???","version":"x"}}}";}', $log->variables);
+    $this->assertEquals('a:1:{s:12:"@placeholder";s:497:"{"updates_log":"2.0","last_check_epoch":' . $time . ',"last_check_human":"' . gmdate('Y-m-d\Th:i:sZT', $time) . '","last_check_ago":1,"summary":{"CURRENT":2,"NOT_CURRENT":1,"NOT_SECURE":0,"NOT_SUPPORTED":1,"REVOKED":0,"UNKNOWN":1},"details":{"x":{"status":"NOT_CURRENT","version_used":"x"},"y":{"status":"NOT_SUPPORTED","version_used":"x"},"z":{"status":"NOT_SECURE","version_used":"x"},"a":{"status":"CURRENT","version_used":"x"},"b":{"status":"CURRENT","version_used":"x"},"c":{"status":"???","version_used":"x"}}}";}', $log->variables);
     $this->assertEquals(6, $log->severity);
     $this->assertGreaterThan(time() - 5, $log->timestamp);
   }
