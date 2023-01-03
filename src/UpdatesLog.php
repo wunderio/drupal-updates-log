@@ -179,17 +179,17 @@ class UpdatesLog {
    */
   public function statusesIntegrate(array $new, array $old): array {
 
-    $int = [];
+    $integrated = [];
 
     foreach ($new as $project => $data) {
       $status = $data['status'];
       if ($status === '???' && array_key_exists($project, $old)) {
         $status = $old[$project];
       }
-      $int[$project] = $status;
+      $integrated[$project] = $status;
     }
 
-    return $int;
+    return $integrated;
   }
 
   /*
