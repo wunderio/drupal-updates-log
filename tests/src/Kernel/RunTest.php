@@ -6,12 +6,18 @@ use Drupal\KernelTests\KernelTestBase;
 use Drupal\updates_log\UpdatesLog;
 
 /**
+ * Tests that UpdatesLog does not crash during full run.
  *
  * @group updates_log
  */
 class RunTest extends KernelTestBase {
 
-  private UpdatesLog $service;
+  /**
+   * The UpdatesLog service.
+   *
+   * @var \Drupal\updates_log\UpdatesLog
+   */
+  private UpdatesLog $updatesLogService;
 
   /**
    * The modules to load to run the test.
@@ -31,7 +37,7 @@ class RunTest extends KernelTestBase {
 
     $this->installConfig(['updates_log']);
     /** @var \Drupal\updates_log\UpdatesLog $service */
-    $this->service = \Drupal::service('updates_log.updates_logger');
+    $this->updatesLogService = \Drupal::service('updates_log.updates_logger');
 
   }
 
@@ -40,9 +46,10 @@ class RunTest extends KernelTestBase {
    */
   public function testCrash(): void {
     try {
-      $this->service->run();
+      $this->updatesLogService->run();
       $this->assertTrue(TRUE);
-    } catch (\Exception $exception) {
+    }
+    catch (\Exception $exception) {
       $this->fail("Run failed with: " . $exception->getMessage());
     }
   }

@@ -2,8 +2,8 @@
 
 namespace Drupal\Tests\updates_log\Unit;
 
-
 /**
+ * The Compute Diff test.
  *
  * @group updates_log
  * @coversDefaultClass \Drupal\updates_log\UpdatesLog
@@ -19,7 +19,6 @@ class ComputeDiffTest extends UpdatesLogTestBase {
       ['x' => 'x']
     );
     $this->assertSame([], $int);
-
 
   }
 

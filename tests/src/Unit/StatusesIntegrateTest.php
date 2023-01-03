@@ -2,8 +2,8 @@
 
 namespace Drupal\Tests\updates_log\Unit;
 
-
 /**
+ * The Statuses Integrate test.
  *
  * @group updates_log
  * @coversDefaultClass \Drupal\updates_log\UpdatesLog

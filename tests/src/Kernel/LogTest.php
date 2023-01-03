@@ -12,8 +12,18 @@ use Drupal\updates_log\UpdatesLog;
  */
 class LogTest extends KernelTestBase {
 
-  private UpdatesLog $service;
+  /**
+   * The UpdatesLog service.
+   *
+   * @var \Drupal\updates_log\UpdatesLog
+   */
+  private UpdatesLog $updatesLogService;
 
+  /**
+   * The Database Connection.
+   *
+   * @var \Drupal\Core\Database\Connection
+   */
   private Connection $db;
 
   /**
@@ -36,9 +46,8 @@ class LogTest extends KernelTestBase {
     $this->installConfig(['updates_log']);
     $this->installSchema('dblog', ['watchdog']);
 
-
     /** @var \Drupal\updates_log\UpdatesLog $service */
-    $this->service = \Drupal::service('updates_log.updates_logger');
+    $this->updatesLogService = \Drupal::service('updates_log.updates_logger');
     $this->db = \Drupal::database();
 
   }
@@ -51,7 +60,7 @@ class LogTest extends KernelTestBase {
     $statuses = ['drupal' => ['new' => 'new', 'old' => 'old']];
 
     $this->db->truncate('watchdog')->execute();
-    $this->service->logDiff($statuses);
+    $this->updatesLogService->logDiff($statuses);
     $query = $this->db->query("select * from {watchdog}");
     $result = $query->fetchAll();
     $log = reset($result);
@@ -93,7 +102,7 @@ class LogTest extends KernelTestBase {
     ];
 
     $this->db->truncate('watchdog')->execute();
-    $this->service->logStatistics($statistics);
+    $this->updatesLogService->logStatistics($statistics);
     $query = $this->db->query("select * from {watchdog}");
     $result = $query->fetchAll();
     $log = reset($result);
@@ -104,6 +113,5 @@ class LogTest extends KernelTestBase {
     $this->assertEquals(6, $log->severity);
     $this->assertGreaterThan(time() - 5, $log->timestamp);
   }
-
 
 }

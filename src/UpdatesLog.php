@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Updates Log class.
- */
-
 declare(strict_types=1);
 
 namespace Drupal\updates_log;
@@ -15,7 +10,9 @@ use Drupal\Core\State\StateInterface;
 use Drupal\update\UpdateManagerInterface;
 use Drupal\update\UpdateProcessorInterface;
 
-
+/**
+ * The UpdatesLog class.
+ */
 class UpdatesLog {
 
   public const TIME_STATE = 'updates_log.last';
@@ -29,20 +26,51 @@ class UpdatesLog {
    */
   private int $lastUpdated;
 
+  /**
+   * The StateInterface.
+   *
+   * @var \Drupal\Core\State\StateInterface
+   */
   private StateInterface $state;
 
+  /**
+   * The LoggerChannelInterface.
+   *
+   * @var \Drupal\Core\Logger\LoggerChannelInterface
+   */
   private LoggerChannelInterface $logger;
 
+  /**
+   * The UpdateManagerInterface.
+   *
+   * @var \Drupal\update\UpdateManagerInterface
+   */
   private UpdateManagerInterface $updateManager;
 
+  /**
+   * The UpdateProcessorInterface.
+   *
+   * @var \Drupal\update\UpdateProcessorInterface
+   */
   private UpdateProcessorInterface $updateProcessor;
 
-
+  /**
+   * UpdatesLog constructor.
+   *
+   * @param \Drupal\Core\State\StateInterface $state
+   *   The StateInterface.
+   * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $loggerChannelFactory
+   *   The LoggerChannelInterface.
+   * @param \Drupal\update\UpdateManagerInterface $updateManager
+   *   The UpdateManagerInterface.
+   * @param \Drupal\update\UpdateProcessorInterface $updateProcessor
+   *   The UpdateProcessorInterface.
+   */
   public function __construct(
-    StateInterface                $state,
+    StateInterface $state,
     LoggerChannelFactoryInterface $loggerChannelFactory,
-    UpdateManagerInterface        $updateManager,
-    UpdateProcessorInterface      $updateProcessor
+    UpdateManagerInterface $updateManager,
+    UpdateProcessorInterface $updateProcessor
   ) {
     $this->state = $state;
     $this->logger = $loggerChannelFactory->get('updates_log');
@@ -50,7 +78,6 @@ class UpdatesLog {
     $this->updateProcessor = $updateProcessor;
     $this->lastUpdated = $state->get('update.last_check', 0);
   }
-
 
   /*
    * Business Logic
@@ -90,6 +117,8 @@ class UpdatesLog {
    *
    * @param int $now
    *   The epoch timestamp of the now.
+   * @param int|null $last
+   *   Last report time.
    *
    * @return bool
    *   False = don't update. True = do update.
@@ -98,7 +127,7 @@ class UpdatesLog {
     if ($last === NULL || getenv('UPDATES_LOG_TEST')) {
       return TRUE;
     }
-    // run every hour
+    // Run every hour.
     return $now >= $last + (60 * 60);
   }
 
@@ -107,6 +136,8 @@ class UpdatesLog {
    *
    * @param array $new
    *   New statuses.
+   * @param array $old
+   *   Old statuses.
    *
    * @return array
    *   Statuses diff.
@@ -140,6 +171,8 @@ class UpdatesLog {
    *
    * @param array $new
    *   New statuses.
+   * @param array $old
+   *   Old statuses.
    *
    * @return array
    *   Integrated statuses.
@@ -158,6 +191,7 @@ class UpdatesLog {
 
     return $int;
   }
+
   /*
    * Presentation
    */
@@ -165,12 +199,12 @@ class UpdatesLog {
   /**
    * Log the modules, and statuses.
    *
-   * @param array<string, array<string, string>> $statuses
+   * @param array[] $statuses
    *   An associative array of ['module_name' => ['old' => 'status_string',
    *   'new' => 'status_string']].
    */
   public function logDiff(array $statuses): void {
-    // TODO do same JSON as statistics
+    // @todo do same JSON as statistics.
     foreach ($statuses as $project => $status) {
       // Drupal logging cannot handle json in any way.
       $this->logger->info(
@@ -203,8 +237,8 @@ class UpdatesLog {
   /**
    * Get module statuses from Drupal.
    *
-   * @return array<string, string>
-   *   Return array of ['module_name' => 'status_string'].
+   * @return array
+   *   Return array of statuses.
    */
   public function statusesGet(): array {
 
@@ -252,11 +286,13 @@ class UpdatesLog {
   }
 
   /**
-   * Generates "Statistics" of module states and verions.
+   * Generates "Statistics" of module states and versions.
    *
    * @param array $statuses
+   *   An array of statuses.
    *
    * @return array
+   *   The statistics array.
    */
   public function generateStatistics(array $statuses): array {
     $statistics = [
@@ -267,7 +303,6 @@ class UpdatesLog {
       "summary" => [
         "CURRENT" => 0,
         "NOT_CURRENT" => 0,
-        "OUTDATED" => 0,
         "NOT_SECURE" => 0,
         "NOT_SUPPORTED" => 0,
         "REVOKED" => 0,
@@ -294,23 +329,31 @@ class UpdatesLog {
   }
 
   /**
-   * @param array $statistics
+   * Logs the given Statistics in json using the Logger.
    *
-   * @return void
+   * @param array $statistics
+   *   The statistics array.
    */
   public function logStatistics(array $statistics): void {
     try {
       $json = json_encode($statistics, JSON_THROW_ON_ERROR);
-    } catch (\Exception $exception) {
+    }
+    catch (\Exception $exception) {
       $json = $exception->getMessage();
     }
     $this->logger->info('updates_log={placeholder}', ["placeholder" => $json]);
   }
 
+  /**
+   * Get the last time UpdatesLog was run.
+   */
   private function getLastRan(): ?int {
     return $this->state->get(self::TIME_STATE);
   }
 
+  /**
+   * Get the statuses from the last time UpdatesLog was run.
+   */
   private function getLastStatuses(): array {
     return $this->state->get(self::STATUSES_STATE, []);
   }

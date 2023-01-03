@@ -5,14 +5,19 @@ namespace Drupal\Tests\updates_log\Kernel;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\updates_log\UpdatesLog;
 
-
 /**
+ * The StatusesGet test.
  *
  * @group updates_log
  */
 class StatusesGetTest extends KernelTestBase {
 
-  private UpdatesLog $service;
+  /**
+   * The UpdatesLog service.
+   *
+   * @var \Drupal\updates_log\UpdatesLog
+   */
+  private UpdatesLog $updatesLogService;
 
   /**
    * The modules to load to run the test.
@@ -32,7 +37,7 @@ class StatusesGetTest extends KernelTestBase {
 
     $this->installConfig(['updates_log']);
     /** @var \Drupal\updates_log\UpdatesLog $service */
-    $this->service = \Drupal::service('updates_log.updates_logger');
+    $this->updatesLogService = \Drupal::service('updates_log.updates_logger');
 
   }
 
@@ -40,7 +45,7 @@ class StatusesGetTest extends KernelTestBase {
    * @covers ::statusesGet
    */
   public function testStructure(): void {
-    $statuses = $this->service->statusesGet();
+    $statuses = $this->updatesLogService->statusesGet();
     $this->assertArrayHasKey('drupal', $statuses);
     $this->assertIsArray($statuses['drupal']);
   }

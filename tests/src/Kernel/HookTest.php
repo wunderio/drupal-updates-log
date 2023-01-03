@@ -6,6 +6,7 @@ use Drupal\KernelTests\KernelTestBase;
 use Drupal\updates_log\UpdatesLog;
 
 /**
+ * The Cron hook test.
  *
  * @group updates_log
  */

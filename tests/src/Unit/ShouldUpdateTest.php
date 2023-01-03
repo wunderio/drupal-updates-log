@@ -2,7 +2,6 @@
 
 namespace Drupal\Tests\updates_log\Unit;
 
-
 /**
  * @coversDefaultClass \Drupal\updates_log\UpdatesLog
  * @group updates_log

@@ -5,6 +5,7 @@ namespace Drupal\Tests\updates_log\Unit;
 use Drupal\Core\KeyValueStore\KeyValueMemoryFactory;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\State\State;
+use Drupal\Core\State\StateInterface;
 use Drupal\Tests\UnitTestCase;
 use Drupal\update\UpdateManagerInterface;
 use Drupal\update\UpdateProcessorInterface;
@@ -19,11 +20,23 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
  */
 class UpdatesLogTestBase extends UnitTestCase {
 
+  /**
+   * The UpdatesLog service.
+   *
+   * @var \Drupal\updates_log\UpdatesLog
+   */
   protected UpdatesLog $updatesLog;
 
-  protected State $state;
+  /**
+   * The State.
+   *
+   * @var \Drupal\Core\State\State
+   */
+  protected State|StateInterface $state;
 
-
+  /**
+   * Setup for testing UpdatesLog.
+   */
   protected function setUp(): void {
     parent::setUp();
     $this->state = new State(new KeyValueMemoryFactory());
@@ -44,14 +57,11 @@ class UpdatesLogTestBase extends UnitTestCase {
     $update_manager = $this->prophesize(UpdateManagerInterface::class);
     $update_processor = $this->prophesize(UpdateProcessorInterface::class);
 
-
     \Drupal::setContainer(new ContainerBuilder());
     \Drupal::getContainer()->set('logger.factory', $logger_factory->reveal());
     \Drupal::getContainer()->set('state', $state);
-
 
     $this->updatesLog = new UpdatesLog($state->reveal(), $logger_factory->reveal(), $update_manager->reveal(), $update_processor->reveal());
   }
 
 }
-
