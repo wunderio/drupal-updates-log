@@ -46,7 +46,6 @@ class LogTest extends KernelTestBase {
     $this->installConfig(['updates_log']);
     $this->installSchema('dblog', ['watchdog']);
 
-    /** @var \Drupal\updates_log\UpdatesLog $service */
     $this->updatesLogService = \Drupal::service('updates_log.updates_logger');
     $this->db = \Drupal::database();
 

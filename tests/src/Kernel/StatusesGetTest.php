@@ -36,7 +36,6 @@ class StatusesGetTest extends KernelTestBase {
     parent::setUp();
 
     $this->installConfig(['updates_log']);
-    /** @var \Drupal\updates_log\UpdatesLog $service */
     $this->updatesLogService = \Drupal::service('updates_log.updates_logger');
 
   }
