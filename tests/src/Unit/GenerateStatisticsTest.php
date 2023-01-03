@@ -17,7 +17,7 @@ class GenerateStatisticsTest extends UpdatesLogTestBase {
     $statistics = $this->updatesLog->generateStatistics(
       [
         'x' => ['status' => 'NOT_CURRENT', 'version' => 'x'],
-        'y' => ['status' => 'OUTDATED', 'version' => 'x'],
+        'y' => ['status' => 'NOT_SUPPORTED', 'version' => 'x'],
         'z' => ['status' => 'NOT_SECURE', 'version' => 'x'],
         'a' => ['status' => 'CURRENT', 'version' => 'x'],
         'b' => ['status' => 'CURRENT', 'version' => 'x'],
