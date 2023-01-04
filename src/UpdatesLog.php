@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Drupal\updates_log;
 
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
-use Drupal\Core\Logger\LoggerChannelInterface;
 use Drupal\Core\State\StateInterface;
 use Drupal\update\UpdateManagerInterface;
 use Drupal\update\UpdateProcessorInterface;
+use Psr\Log\LoggerInterface;
 
 /**
  * The UpdatesLog class.
@@ -34,11 +34,11 @@ class UpdatesLog {
   private StateInterface $state;
 
   /**
-   * The LoggerChannelInterface.
+   * The Logger.
    *
-   * @var \Drupal\Core\Logger\LoggerChannelInterface
+   * @var \Psr\Log\LoggerInterface
    */
-  private LoggerChannelInterface $logger;
+  private LoggerInterface $logger;
 
   /**
    * The UpdateManagerInterface.
@@ -105,7 +105,7 @@ class UpdatesLog {
       $new_statuses = $this->statusesIntegrate($statuses, $old_statuses);
       $this->state->set(self::STATUSES_STATE, $new_statuses);
     }
-    if ($now <= $this->getLastRan() + (60 * 60 * 24)) {
+    if ($now >= $this->getLastRan() + (60 * 60 * 24)) {
       $statistics = $this->generateStatistics($statuses);
       $this->logStatistics($statistics);
     }
@@ -204,17 +204,19 @@ class UpdatesLog {
    *   'new' => 'status_string']].
    */
   public function logDiff(array $statuses): void {
-    // @todo do same JSON as statistics.
     foreach ($statuses as $project => $status) {
-      // Drupal logging cannot handle json in any way.
-      $this->logger->info(
-        "(\"project\":\"@project\",\"old\":\"@old\",\"new\":\"@new\")",
-        [
-          '@project' => $project,
-          '@new' => $status['new'],
-          '@old' => $status['old'],
-        ]
-      );
+      $log = [
+        'project' => $project,
+        'old' => $status['old'],
+        'new' => $status['new'],
+      ];
+      try {
+        $json = json_encode($log, JSON_THROW_ON_ERROR);
+      }
+      catch (\Exception $exception) {
+        $json = $exception->getMessage();
+      }
+      $this->logger->info('updates_log={placeholder}', ["placeholder" => $json]);
     }
   }
 
@@ -341,7 +343,7 @@ class UpdatesLog {
     catch (\Exception $exception) {
       $json = $exception->getMessage();
     }
-    $this->logger->info('updates_log={placeholder}', ["placeholder" => $json]);
+    $this->logger->info('updates_log_statistics={placeholder}', ["placeholder" => $json]);
   }
 
   /**
