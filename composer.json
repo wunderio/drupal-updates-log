@@ -8,7 +8,7 @@
             "name": "Ragnar Kurm",
             "email": "ragnar.kurm@wunder.io",
             "homepage": "https://github.com/ragnarkurmwunder",
-            "role": "Owwner"
+            "role": "Owner"
         }
     ],
     "keywords": [
@@ -17,19 +17,5 @@
         "log",
         "security"
     ],
-    "license": "GPL-3.0",
-    "require-dev": {
-        "wunderio/code-quality": "^2",
-        "phpunit/phpunit": "^9"
-    },
-    "require": {
-        "php": ">=8.0",
-        "drupal/core": "^8 || ^9"
-    },
-    "config": {
-        "allow-plugins": {
-            "dealerdirect/phpcodesniffer-composer-installer": true,
-            "phpro/grumphp": true
-        }
-    }
+    "license": "GPL-3.0"
 }
