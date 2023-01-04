@@ -29,7 +29,6 @@ class GenerateStatisticsTest extends UpdatesLogTestBase {
     $this->assertEquals(1, $statistics['summary']['NOT_CURRENT']);
     $this->assertEquals(1, $statistics['summary']['UNKNOWN']);
     $this->assertCount(4, $statistics['details']);
-
   }
 
 }

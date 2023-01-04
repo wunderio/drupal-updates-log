@@ -19,7 +19,6 @@ class ComputeDiffTest extends UpdatesLogTestBase {
       ['x' => 'x']
     );
     $this->assertSame([], $diff);
-
   }
 
   /**
