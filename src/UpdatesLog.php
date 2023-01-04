@@ -105,7 +105,7 @@ class UpdatesLog {
       $new_statuses = $this->statusesIntegrate($statuses, $old_statuses);
       $this->state->set(self::STATUSES_STATE, $new_statuses);
     }
-    if ($now >= $this->getLastRan() + (60 * 60 * 24)) {
+    if (getenv('UPDATES_LOG_TEST') || ($now >= $this->getLastRan() + (60 * 60 * 24))) {
       $statistics = $this->generateStatistics($statuses);
       $this->logStatistics($statistics);
     }
