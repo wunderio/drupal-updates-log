@@ -5,9 +5,7 @@
  * Updates Log module.
  */
 
-declare(strict_types = 1);
-
-use Drupal\updates_log\UpdatesLog;
+declare(strict_types=1);
 
 /**
  * Implements hook_cron().
@@ -15,6 +13,7 @@ use Drupal\updates_log\UpdatesLog;
  * Log module statuses when necessary.
  */
 function updates_log_cron(): void {
-  $module = new UpdatesLog();
-  $module->run();
+  /** @var \Drupal\updates_log\UpdatesLog $logger */
+  $logger = \Drupal::service('updates_log.updates_logger');
+  $logger->run();
 }

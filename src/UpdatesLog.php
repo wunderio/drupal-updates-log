@@ -1,15 +1,83 @@
 <?php
 
-/**
- * @file
- * Updates Log class.
- */
-
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Drupal\updates_log;
 
+use Drupal\Core\Logger\LoggerChannelFactoryInterface;
+use Drupal\Core\State\StateInterface;
+use Drupal\update\UpdateManagerInterface;
+use Drupal\update\UpdateProcessorInterface;
+use Psr\Log\LoggerInterface;
+
+/**
+ * The UpdatesLog class.
+ */
 class UpdatesLog {
+
+  public const TIME_STATE = 'updates_log.last';
+
+  public const STATUSES_STATE = 'updates_log.statuses';
+
+  /**
+   * Last time updates were checked.
+   *
+   * @var int
+   */
+  private int $lastUpdated;
+
+  /**
+   * The StateInterface.
+   *
+   * @var \Drupal\Core\State\StateInterface
+   */
+  private StateInterface $state;
+
+  /**
+   * The Logger.
+   *
+   * @var \Psr\Log\LoggerInterface
+   */
+  private LoggerInterface $logger;
+
+  /**
+   * The UpdateManagerInterface.
+   *
+   * @var \Drupal\update\UpdateManagerInterface
+   */
+  private UpdateManagerInterface $updateManager;
+
+  /**
+   * The UpdateProcessorInterface.
+   *
+   * @var \Drupal\update\UpdateProcessorInterface
+   */
+  private UpdateProcessorInterface $updateProcessor;
+
+  /**
+   * UpdatesLog constructor.
+   *
+   * @param \Drupal\Core\State\StateInterface $state
+   *   The StateInterface.
+   * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $loggerChannelFactory
+   *   The LoggerChannelInterface.
+   * @param \Drupal\update\UpdateManagerInterface $updateManager
+   *   The UpdateManagerInterface.
+   * @param \Drupal\update\UpdateProcessorInterface $updateProcessor
+   *   The UpdateProcessorInterface.
+   */
+  public function __construct(
+    StateInterface $state,
+    LoggerChannelFactoryInterface $loggerChannelFactory,
+    UpdateManagerInterface $updateManager,
+    UpdateProcessorInterface $updateProcessor
+  ) {
+    $this->state = $state;
+    $this->logger = $loggerChannelFactory->get('updates_log');
+    $this->updateManager = $updateManager;
+    $this->updateProcessor = $updateProcessor;
+    $this->lastUpdated = $state->get('update.last_check', 0);
+  }
 
   /*
    * Business Logic
@@ -21,26 +89,27 @@ class UpdatesLog {
   public function run(): void {
 
     $now = time();
-    $last = $this->lastGet();
-    if (!$this->ultimateControl() && !$this->shouldUpdate($now, $last)) {
+    $last = $this->getLastRan();
+    if (!$this->shouldUpdate($now, $last)) {
       return;
     }
 
     $this->refresh();
     $statuses = $this->statusesGet();
-    if ($this->isDiffMode()) {
-      $oldStatuses = $this->statusesLoad();
-      $diff = $this->computeDiff($statuses, $oldStatuses);
-      if (!empty($diff)) {
-        $this->logDiff($diff);
-        $statuses2 = $this->statusesIntegrate($statuses, $oldStatuses);
-        $this->statusesSave($statuses2);
-      }
+    $old_statuses = $this->getLastStatuses();
+
+    $diff = $this->computeDiff($statuses, $old_statuses);
+
+    if (!empty($diff)) {
+      $this->logDiff($diff);
+      $new_statuses = $this->statusesIntegrate($statuses, $old_statuses);
+      $this->state->set(self::STATUSES_STATE, $new_statuses);
     }
-    else {
-      $this->logPlain($statuses);
+    if (getenv('UPDATES_LOG_TEST') || ($now >= $this->getLastRan() + (60 * 60 * 24))) {
+      $statistics = $this->generateStatistics($statuses);
+      $this->logStatistics($statistics);
     }
-    $this->lastSet($now);
+    $this->state->set(self::TIME_STATE, $now);
   }
 
   /**
@@ -48,23 +117,18 @@ class UpdatesLog {
    *
    * @param int $now
    *   The epoch timestamp of the now.
-   * @param int $last
-   *   Last report time (epoch seconds).
+   * @param int|null $last
+   *   Last report time.
    *
    * @return bool
    *   False = don't update. True = do update.
    */
   public function shouldUpdate(int $now, ?int $last): bool {
-
-    if (empty($last)) {
+    if ($last === NULL || getenv('UPDATES_LOG_TEST')) {
       return TRUE;
     }
-
-    $now = date('Ymd', $now);
-    $last = date('Ymd', $last);
-    $status = $now !== $last;
-
-    return $status;
+    // Run every hour.
+    return $now >= $last + (60 * 60);
   }
 
   /**
@@ -82,29 +146,23 @@ class UpdatesLog {
 
     $diff = [];
 
-    foreach ($new as $project => $status) {
+    foreach ($new as $project => $data) {
+      $status = $data['status'];
       if (!array_key_exists($project, $old)) {
         $diff[$project] = [
           'old' => '',
           'new' => $status,
         ];
-        goto next;
       }
-      else if ($status == '???') {
-        goto next;
+      elseif ($status !== '???' && $old[$project] !== $status) {
+        $diff[$project] = [
+          'old' => $old[$project],
+          'new' => $status,
+        ];
       }
-      if ($old[$project] == $status) {
-        goto next;
-      }
-      $diff[$project] = [
-        'old' => $old[$project],
-        'new' => $status,
-      ];
 
-      next:
       unset($old[$project]);
     }
-
     return $diff;
   }
 
@@ -121,66 +179,17 @@ class UpdatesLog {
    */
   public function statusesIntegrate(array $new, array $old): array {
 
-    $int = [];
+    $integrated = [];
 
-    foreach ($new as $project => $status) {
-      if ($status == '???' && array_key_exists($project, $old)) {
+    foreach ($new as $project => $data) {
+      $status = $data['status'];
+      if ($status === '???' && array_key_exists($project, $old)) {
         $status = $old[$project];
       }
-      $int[$project] = $status;
+      $integrated[$project] = $status;
     }
 
-    return $int;
-  }
-
-  /*
-   * Storage
-   */
-
-  /**
-   * Get the last update time.
-   *
-   * @return int
-   *   Return int of last update time, or NULL when first time.
-   */
-  public function lastGet(): ?int {
-
-    /** @var ?mixed */
-    $last = \Drupal::state()->get('updates_log.last');
-
-    $last = empty($last) ? NULL : intval($last);
-
-    return $last;
-  }
-
-  /**
-   * Set the last update time.
-   *
-   * @param int $time
-   *   Set update last time logged.
-   */
-  public function lastSet(?int $time): void {
-    \Drupal::state()->set('updates_log.last', $time);
-  }
-
-  /**
-   * Save statuses.
-   *
-   * @param array $statuses
-   *   Statuses to save.
-   */
-  public function statusesSave(array $statuses): void {
-    \Drupal::state()->set('updates_log.statuses', $statuses);
-  }
-
-  /**
-   * Get statuses of last time.
-   *
-   * @return array
-   *   Statuses of last time.
-   */
-  public function statusesLoad(): array {
-    return \Drupal::state()->get('updates_log.statuses', []);
+    return $integrated;
   }
 
   /*
@@ -190,41 +199,24 @@ class UpdatesLog {
   /**
    * Log the modules, and statuses.
    *
-   * @param array<string, string> $statuses
-   *   An associative array of ['module_name' => 'status_string'].
-   */
-  public function logPlain(array $statuses): void {
-    $logger = \Drupal::logger('updates_log');
-    foreach ($statuses as $project => $status) {
-      // Drupal logging cannot handle json in any way.
-      $logger->info(
-        "(\"project\":\"@project\",\"status\":\"@status\")",
-        [
-          '@project' => $project,
-          '@status' => $status,
-        ]
-      );
-    }
-  }
-
-  /**
-   * Log the modules, and statuses.
-   *
-   * @param array<string, array<string, string>> $statuses
-   *   An associative array of ['module_name' => ['old' => 'status_string', 'new' => 'status_string']].
+   * @param array[] $statuses
+   *   An associative array of ['module_name' => ['old' => 'status_string',
+   *   'new' => 'status_string']].
    */
   public function logDiff(array $statuses): void {
-    $logger = \Drupal::logger('updates_log');
     foreach ($statuses as $project => $status) {
-      // Drupal logging cannot handle json in any way.
-      $logger->info(
-        "(\"project\":\"@project\",\"old\":\"@old\",\"new\":\"@new\")",
-        [
-          '@project' => $project,
-          '@new' => $status['new'],
-          '@old' => $status['old'],
-        ]
-      );
+      $log = [
+        'project' => $project,
+        'old' => $status['old'],
+        'new' => $status['new'],
+      ];
+      try {
+        $json = json_encode($log, JSON_THROW_ON_ERROR);
+      }
+      catch (\Exception $exception) {
+        $json = $exception->getMessage();
+      }
+      $this->logger->info('updates_log={placeholder}', ["placeholder" => $json]);
     }
   }
 
@@ -239,23 +231,16 @@ class UpdatesLog {
    */
   public function refresh(): void {
 
-    if (!empty(getenv('TESTING'))) {
-      // We cannot boot properly from external script.
-      // It corrupts the database.
-      // See notes in init.php.
-      return;
-    }
-
-    update_refresh();
-    update_fetch_data();
+    $this->updateManager->refreshUpdateData();
+    $this->updateProcessor->fetchData();
     update_clear_update_disk_cache();
   }
 
   /**
    * Get module statuses from Drupal.
    *
-   * @return array<string, string>
-   *   Return array of ['module_name' => 'status_string'].
+   * @return array
+   *   Return array of statuses.
    */
   public function statusesGet(): array {
 
@@ -275,10 +260,9 @@ class UpdatesLog {
       -4 => 'FETCH_PENDING',
     ];
 
-    /** @var array<mixed> */
     $available = update_get_available(TRUE);
 
-    /** @var array<string, array{status: int}> */
+    /** @var array<string, array{status: int}> $available */
     $project_data = update_calculate_project_data($available);
 
     ksort($project_data);
@@ -288,34 +272,92 @@ class UpdatesLog {
       if ($status < 0) {
         $status = '???';
       }
-      else if (empty($map[$status])) {
+      elseif (empty($map[$status])) {
         $status = '???';
       }
       else {
         $status = $map[$status];
       }
-      $statuses[$key] = $status;
+      $statuses[$key] = [
+        'status' => $status,
+        'version_used' => $data['existing_version'],
+      ];
     }
 
     return $statuses;
   }
 
   /**
-   * Check if need to run in diff mode.
+   * Generates "Statistics" of module states and versions.
    *
-   * @return bool
-   *   True if diff mode, false otherwise.
+   * @param array $statuses
+   *   An array of statuses.
+   *
+   * @return array
+   *   The statistics array.
    */
-  public function isDiffMode(): bool {
-    return (bool) \Drupal::config('updates_log')->get('diff');
+  public function generateStatistics(array $statuses): array {
+    $statistics = [
+      "updates_log" => "2.0",
+      "last_check_epoch" => $this->lastUpdated,
+      "last_check_human" => gmdate('Y-m-d\Th:i:sZT', $this->lastUpdated),
+      "last_check_ago" => time() - $this->lastUpdated,
+      "summary" => [
+        "CURRENT" => 0,
+        "NOT_CURRENT" => 0,
+        "NOT_SECURE" => 0,
+        "NOT_SUPPORTED" => 0,
+        "REVOKED" => 0,
+        "UNKNOWN" => 0,
+      ],
+      'details' => [],
+    ];
+    foreach ($statuses as $project => $data) {
+      $status = $data['status'];
+      if (array_key_exists($status, $statistics['summary'])) {
+        $statistics['summary'][$status] += 1;
+      }
+      else {
+        $statistics['summary']['UNKNOWN'] += 1;
+      }
+
+      if ($status === 'CURRENT') {
+        continue;
+      }
+      $statistics['details'][$project] = $data;
+    }
+
+    return $statistics;
   }
 
   /**
-   * Check if running frequency should be controlled by cron job.
+   * Logs the given Statistics in json using the Logger.
    *
-   * @return bool
+   * @param array $statistics
+   *   The statistics array.
    */
-  public function ultimateControl():bool {
-    return (bool) \Drupal::config('updates_log')->get('ultimate_control');
+  public function logStatistics(array $statistics): void {
+    try {
+      $json = json_encode($statistics, JSON_THROW_ON_ERROR);
+    }
+    catch (\Exception $exception) {
+      $json = $exception->getMessage();
+    }
+    $this->logger->info('updates_log_statistics={placeholder}', ["placeholder" => $json]);
   }
+
+  /**
+   * Get the last time UpdatesLog was run.
+   */
+  private function getLastRan(): ?int {
+    return $this->state->get(self::TIME_STATE);
+  }
+
+  /**
+   * Get the statuses from the last time UpdatesLog was run.
+   */
+  private function getLastStatuses(): array {
+    return $this->state->get(self::STATUSES_STATE, []);
+  }
+
 }

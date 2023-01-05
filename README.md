@@ -18,25 +18,27 @@ As an alternative there is Warden, but it lacks highly configurable alerting.
 ## Install
 
 1. Install the module: `composer require wunderio/updates_log:^1`
-1. [Enable Diff mode if needed](#diff-mode)
-1. Enable the module: `drush en -y updates_log`
-1. Optional: By using [Config Split](https://www.drupal.org/project/config_split) keep module enabled only in the default branch (`main` or `master`).
-1. When using [Elysia Cron](https://www.drupal.org/project/elysia_cron), configure the module's cron hook to run once per day.
-1. Export the configuration: `drush cex -y`
-1. NB! In diff mode there will be nothing in logs immediately, and maybe even not in coming weeks, unless any of the packages change state.
+2. Enable the module: `drush en -y updates_log`
+3. Optional: By using [Config Split](https://www.drupal.org/project/config_split) keep module enabled only in the default branch.
+4. Export the configuration: `drush cex -y`
+5. NB! In diff mode there will be nothing in logs immediately, and maybe even not in coming weeks, unless any of the
+   packages change state.
 
 ## Usage
 
-On daily bases it logs module statuses like this:
+On hourly basis it logs modules status differences like this:
 
 ```
- ---- -------------- ------------- ---------- ---------------------------------------------
+ ---- -------------- ------------- ---------- --------------------------------------------------------------------
   ID   Date           Type          Severity   Message
- ---- -------------- ------------- ---------- ---------------------------------------------
-  68   03/Jun 16:34   updates_log   Info       ("project":"drupal","status":"CURRENT")
-  69   03/Jun 16:34   updates_log   Info       ("project":"module1","status":"NOT_SECURE")
-  70   03/Jun 16:34   updates_log   Info       ("project":"module2","status":"NOT_CURRENT")
+ ---- -------------- ------------- ---------- --------------------------------------------------------------------
+  1    01/Jul 15:43   updates_log   Info       updates_log={"project":"drupal","old":"CURRENT","new":"NOT_SECURE"}
+ ---- -------------- ------------- ---------- --------------------------------------------------------------------
 ```
+
+`old` and `new` denote statuses.
+Respectively old status, and new status.
+The above log can be understood like this: `drupal` package was up-to-date yesterday, changed its status (security update was released), so the status changed from yesterday's `CURRENT` to today's `NOT_SECURE`.
 
 Status codes are taken from the Drupal code:
 
@@ -53,43 +55,14 @@ Status codes are taken from the Drupal code:
   - `???` (`NOT_FETCHED`)
   - `???` (`FETCH_PENDING`)
 
-### Diff mode
-
-Diff mode allows to track changes, rather than having full status dumps all the time.
-In `settings.php` add the following:
-
-```php
-$config['updates_log']['diff'] = TRUE;
-```
-
-### Control the scheduling
-
-By default, module status is checked once a day. You can delegate this to cron for custom schedule.
-
-```php
-$config['updates_log']['ultimate_control'] = TRUE;
-```
-
-
-It would produce following log:
-```
- ---- -------------- ------------- ---------- --------------------------------------------------------
-  ID   Date           Type          Severity   Message
- ---- -------------- ------------- ---------- --------------------------------------------------------
-  1    01/Jul 15:43   updates_log   Info       ("project":"drupal","old":"CURRENT","new":"NOT_SECURE")
- ---- -------------- ------------- ---------- --------------------------------------------------------
-```
-
-`old` and `new` denote statuses.
-Respectively old status, and new status.
-The above log can be understood like this: `drupal` package was up-to-date yesterday, changed its status during last 24h (security update was released), so the status changed from yesterday's `CURRENT` to today's `NOT_SECURE`.
-
 ## Timing
 
 Essentially two date strings are compared in format of `YYYYMMDD`.
 If last datestamp and current one differ, the logs are issued.
 The dates are generated according to the local time.
-Therefore every first cron run of the day will trigger messages.
+Messages are sent when more than 1h has passed after last run.
+
+Use the "UPDATES_LOG_TEST" env variable to bypass the time requirement for testing `UPDATES_LOG_TEST=1 drush cron`
 
 ## State
 
@@ -101,18 +74,50 @@ It is needed for deciding when to send out the next batch of logs.
 - `drush sget updates_log.last`
 - `drush sset updates_log.last 1654253832`
 
-When running in diff mode the status is kept in the state variable `updates_log.statuses`.
+The status is kept in the state variable `updates_log.statuses`.
+- `drush sget updates_log.statuses --format=json`
+
+## Statistics
+
+The module also logs "Statistics" once a day that gives a quick overview about how many modules and in what states they are.
+```
+{
+  "updates_log": "2.0",
+  "last_check_epoch": 1672835445,
+  "last_check_human": "2023-01-04T12:30:450GMT",
+  "last_check_ago": 16,
+  "summary": {
+    "CURRENT": 31,
+    "NOT_CURRENT": 0,
+    "NOT_SECURE": 0,
+    "NOT_SUPPORTED": 1,
+    "REVOKED": 0,
+    "UNKNOWN": 0
+  },
+  "details": {
+    "admin_toolbar": {
+      "status": "NOT_SUPPORTED",
+      "version_used": "3.1.0"
+    }
+  }
+}
+```
 
 ## Development of `updates_log`
 
-- `lando start` - Start up the development environment
-- `lando install` - Install development packages of the module.
-- `lando scan` - Run code scanners after development and before committing.
-- `lando test` - Run tests during/after development and before committing.
+For Development, I suggest the [drupal-project](https://github.com/wunderio/drupal-project) as a base.
 
-## Debugging - What to do when you dont see expected results?
+- `lando start` - Start up the development environment
+- clone this project into `web/modules/custom/updates_log`
+- `lando drush en updates_log` enable the module
+- `lando drush cron` or
+  - ssh into the container `lando ssh` and run `UPDATES_LOG_TEST=1 drush cron` to bypass the time checks
+- `lando grumphp run` for code scanning
+- `lando phpunit --group=updates_log` for running tests
+
+## Debugging - What to do when you don't see expected results?
 
 - Check the status at "Available updates" report. Is it red or green?
 - Run this `drush eval '$available = update_get_available(TRUE); $project_data = update_calculate_project_data($available); var_dump($project_data);'`
-- Run this `drush sget updates_log.statuses --format=json` (When running in diff mode)
+- Run this `drush sget updates_log.statuses --format=json`
 - Run this `drush sget updates_log.last`

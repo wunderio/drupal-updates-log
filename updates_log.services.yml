@@ -1,0 +1,4 @@
+services:
+  updates_log.updates_logger:
+    class: Drupal\updates_log\UpdatesLog
+    arguments: [ '@state', '@logger.factory', '@update.manager', '@update.processor' ]
