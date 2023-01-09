@@ -19,6 +19,8 @@ class UpdatesLog {
 
   public const STATUSES_STATE = 'updates_log.statuses';
 
+  public const STATISTICS_TIME_STATE = 'updates_log_statistics.last';
+
   /**
    * Last time updates were checked.
    *
@@ -105,9 +107,10 @@ class UpdatesLog {
       $new_statuses = $this->statusesIntegrate($statuses, $old_statuses);
       $this->state->set(self::STATUSES_STATE, $new_statuses);
     }
-    if (getenv('UPDATES_LOG_TEST') || ($now >= $this->getLastRan() + (60 * 60 * 24))) {
+    if (getenv('UPDATES_LOG_TEST') || ($now >= $this->getLastRanStatistics() + (60 * 60 * 24))) {
       $statistics = $this->generateStatistics($statuses);
       $this->logStatistics($statistics);
+      $this->state->set(self::STATISTICS_TIME_STATE, $now);
     }
     $this->state->set(self::TIME_STATE, $now);
   }
@@ -358,6 +361,13 @@ class UpdatesLog {
    */
   private function getLastStatuses(): array {
     return $this->state->get(self::STATUSES_STATE, []);
+  }
+
+  /**
+   * Get the last time Statistics was logged.
+   */
+  private function getLastRanStatistics(): ?int {
+    return $this->state->get(self::STATISTICS_TIME_STATE);
   }
 
 }
