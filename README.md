@@ -102,6 +102,7 @@ The module also logs "Statistics" once a day that gives a quick overview about h
   }
 }
 ```
+The last run time is kept in State `updates_log_statistics.last`
 
 ## Development of `updates_log`
 
@@ -121,3 +122,4 @@ For Development, I suggest the [drupal-project](https://github.com/wunderio/drup
 - Run this `drush eval '$available = update_get_available(TRUE); $project_data = update_calculate_project_data($available); var_dump($project_data);'`
 - Run this `drush sget updates_log.statuses --format=json`
 - Run this `drush sget updates_log.last`
+- Run this `drush sget updates_log_statistics.last`
