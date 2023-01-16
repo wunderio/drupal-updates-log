@@ -219,7 +219,7 @@ class UpdatesLog {
       catch (\Exception $exception) {
         $json = $exception->getMessage();
       }
-      $this->logger->info('updates_log={placeholder}', ["placeholder" => $json]);
+      $this->logger->info('updates_log=@placeholder', ["@placeholder" => $json]);
     }
   }
 
@@ -346,7 +346,7 @@ class UpdatesLog {
     catch (\Exception $exception) {
       $json = $exception->getMessage();
     }
-    $this->logger->info('updates_log_statistics={placeholder}', ["placeholder" => $json]);
+    $this->logger->info('updates_log_statistics=@placeholder', ["@placeholder" => $json]);
   }
 
   /**
