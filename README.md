@@ -95,9 +95,8 @@ The module also logs "Statistics" once a day that gives a quick overview about h
     "UNKNOWN": 0
   },
   "details": {
-    "admin_toolbar": {
-      "status": "NOT_SUPPORTED",
-      "version_used": "3.1.0"
+    "NOT_SUPPORTED": {
+       "admin_toolbar": "3.1.0"
     }
   }
 }

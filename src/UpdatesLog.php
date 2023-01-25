@@ -327,7 +327,7 @@ class UpdatesLog {
       if ($status === 'CURRENT') {
         continue;
       }
-      $statistics['details'][$project] = $data;
+      $statistics['details'][$status][$project] = $data['version_used'];
     }
 
     return $statistics;
