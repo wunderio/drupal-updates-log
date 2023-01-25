@@ -16,12 +16,12 @@ class GenerateStatisticsTest extends UpdatesLogTestBase {
   public function testGenerateStatistics(): void {
     $statistics = $this->updatesLog->generateStatistics(
       [
-        'x' => ['status' => 'NOT_CURRENT', 'version' => 'x'],
-        'y' => ['status' => 'NOT_SUPPORTED', 'version' => 'x'],
-        'z' => ['status' => 'NOT_SECURE', 'version' => 'x'],
-        'a' => ['status' => 'CURRENT', 'version' => 'x'],
-        'b' => ['status' => 'CURRENT', 'version' => 'x'],
-        'c' => ['status' => '???', 'version' => 'x'],
+        'x' => ['status' => 'NOT_CURRENT', 'version_used' => 'x'],
+        'y' => ['status' => 'NOT_SUPPORTED', 'version_used' => 'x'],
+        'z' => ['status' => 'NOT_SECURE', 'version_used' => 'x'],
+        'a' => ['status' => 'CURRENT', 'version_used' => 'x'],
+        'b' => ['status' => 'CURRENT', 'version_used' => 'x'],
+        'c' => ['status' => '???', 'version_used' => 'x'],
 
       ]
     );
@@ -29,6 +29,8 @@ class GenerateStatisticsTest extends UpdatesLogTestBase {
     $this->assertEquals(1, $statistics['summary']['NOT_CURRENT']);
     $this->assertEquals(1, $statistics['summary']['UNKNOWN']);
     $this->assertCount(4, $statistics['details']);
+    $this->assertArrayHasKey('NOT_SECURE', $statistics['details']);
+    $this->assertArrayHasKey('NOT_SUPPORTED', $statistics['details']);
   }
 
 }
