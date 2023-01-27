@@ -17,28 +17,27 @@ As an alternative there is Warden, but it lacks highly configurable alerting.
 
 ## Install
 
-1. Install the module: `composer require wunderio/updates_log:^1`
+1. Install the module: `composer require wunderio/updates_log:^2`
 2. Enable the module: `drush en -y updates_log`
 3. Optional: By using [Config Split](https://www.drupal.org/project/config_split) keep module enabled only in the default branch.
 4. Export the configuration: `drush cex -y`
-5. NB! In diff mode there will be nothing in logs immediately, and maybe even not in coming weeks, unless any of the
-   packages change state.
+5. To verify the operations run `drush cron`. At the first cron execution it will report all the modules from "unknown" state to the "known" state. Check your logs!
 
 ## Usage
 
-On hourly basis it logs modules status differences like this:
+On hourly basis it logs the differences of the statuses of modules like this (if there are any changes):
 
 ```
- ---- -------------- ------------- ---------- --------------------------------------------------------------------
+ ---- -------------- ------------- ---------- -------------------------------------------------------------------
   ID   Date           Type          Severity   Message
- ---- -------------- ------------- ---------- --------------------------------------------------------------------
-  1    01/Jul 15:43   updates_log   Info       updates_log={"project":"drupal","old":"CURRENT","new":"NOT_SECURE"}
- ---- -------------- ------------- ---------- --------------------------------------------------------------------
+ ---- -------------- ------------- ---------- -------------------------------------------------------------------
+  1    01/Jul 15:43   updates_log   Info      updates_log={"project":"drupal","old":"CURRENT","new":"NOT_SECURE"}
+ ---- -------------- ------------- ---------- -------------------------------------------------------------------
 ```
 
 `old` and `new` denote statuses.
 Respectively old status, and new status.
-The above log can be understood like this: `drupal` package was up-to-date yesterday, changed its status (security update was released), so the status changed from yesterday's `CURRENT` to today's `NOT_SECURE`.
+The above log can be understood like this: `drupal` package was up-to-date in earlier run and changed its status now (security update was released), so the status changed from `CURRENT` to `NOT_SECURE`.
 
 Status codes are taken from the Drupal code:
 
@@ -57,31 +56,40 @@ Status codes are taken from the Drupal code:
 
 ## Timing
 
-Essentially two date strings are compared in format of `YYYYMMDD`.
-If last datestamp and current one differ, the logs are issued.
-The dates are generated according to the local time.
-Messages are sent when more than 1h has passed after last run.
+The full statistics log entry is generated in approx 24h interval.
 
-Use the "UPDATES_LOG_TEST" env variable to bypass the time requirement for testing `UPDATES_LOG_TEST=1 drush cron`
+The diff log entries may be generated as often as once per hour.
 
 ## State
 
-The state of the module is kept in Drupal State `updates_log.last`.
-The value represent the last time the logs were issued.
-The value is stored as seconds since epoch.
-It is needed for deciding when to send out the next batch of logs.
+`updates_log.last` - Only hourly last run timestamp is kept here. The value is kept in epoch seconds. If there is a necessity to observe or change the values, these are the reference commands:
 
 - `drush sget updates_log.last`
 - `drush sset updates_log.last 1654253832`
 
-The status is kept in the state variable `updates_log.statuses`.
-- `drush sget updates_log.statuses --format=json`
+`updates_log_statistics.last` - Only 24h last run timestamp is kept here. The value is kept in epoch seconds. Similar reference commands apply as shown above.
 
-## Statistics
+`updates_log.statuses` - Module "current" statuses are kept in this state variable. Required to be able to perform diff. To observe the contents of it run the following command: `drush sget updates_log.statuses --format=json`.
 
-The module also logs "Statistics" once a day that gives a quick overview about how many modules and in what states they are.
+## Output: Diff
+
+When there are any changes in module statuses, then their output in the logs looks as follows:
+
 ```
-{
+updates_log={
+  project: "webform",
+  old: "NOT_CURRENT",
+  new: "CURRENT"
+}
+```
+
+Every state change will have its own log entry.
+
+## Output: Statistics
+
+The module also logs "Statistics" once in 24h that gives a quick overview about how many modules there are and in what statuses.
+```
+updates_log_statistics={
   "updates_log": "2.0",
   "last_check_epoch": 1672835445,
   "last_check_human": "2023-01-04T12:30:450GMT",
@@ -101,7 +109,8 @@ The module also logs "Statistics" once a day that gives a quick overview about h
   }
 }
 ```
-The last run time is kept in State `updates_log_statistics.last`
+
+The "prefix" (`updates_log_statistics=`) is there to help filter and parse the data from the log entry.
 
 ## Development of `updates_log`
 
@@ -116,6 +125,10 @@ For Development, I suggest the [drupal-project](https://github.com/wunderio/drup
 - `lando phpunit --group=updates_log` for running tests
 
 ## Debugging - What to do when you don't see expected results?
+
+Use the `UPDATES_LOG_TEST` environment variable to bypass the time requirement for testing `UPDATES_LOG_TEST=1 drush cron`. This applies to both (hourly and daily) functional modes. After running this you should get full statistics in logs, and if there are any state changes, these should have its own log entries too.
+
+Here are few more things to try:
 
 - Check the status at "Available updates" report. Is it red or green?
 - Run this `drush eval '$available = update_get_available(TRUE); $project_data = update_calculate_project_data($available); var_dump($project_data);'`
