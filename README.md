@@ -125,7 +125,7 @@ It is detected by using first non-empty item:
 
 ### Env
 
-The `site` identifies environment (dev, staging, producion, etc).
+The `env` identifies environment (dev, staging, producion, etc).
 It is detected by using first non-empty item:
 - Env `ENVIRONMENT_NAME`
 - Env `WKV_SITE_ENV`
