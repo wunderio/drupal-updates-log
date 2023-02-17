@@ -108,7 +108,8 @@ class UpdatesLog {
       $this->state->set(self::STATUSES_STATE, $new_statuses);
     }
     if (getenv('UPDATES_LOG_TEST') || ($now >= $this->getLastRanStatistics() + (60 * 60 * 24))) {
-      $statistics = $this->generateStatistics($statuses);
+      $version = $this->getVersion();
+      $statistics = $this->generateStatistics($statuses, $version);
       $this->logStatistics($statistics);
       $this->state->set(self::STATISTICS_TIME_STATE, $now);
     }
@@ -291,6 +292,18 @@ class UpdatesLog {
   }
 
   /**
+   * Fetch version string of updates_log module itself.
+   *
+   * @return string
+   *   A version string like "1.2.3".
+   */
+  public function getVersion(): string {
+    $data = \Drupal::service('extension.list.module')->getExtensionInfo('updates_log');
+    $version = $data['version'];
+    return $version;
+  }
+
+  /**
    * Generates "Statistics" of module states and versions.
    *
    * @param array $statuses
@@ -299,9 +312,9 @@ class UpdatesLog {
    * @return array
    *   The statistics array.
    */
-  public function generateStatistics(array $statuses): array {
+  public function generateStatistics(array $statuses, string $version): array {
     $statistics = [
-      "updates_log" => "2.0",
+      "updates_log" => $version,
       "last_check_epoch" => $this->lastUpdated,
       "last_check_human" => gmdate('Y-m-d\Th:i:sZT', $this->lastUpdated),
       "last_check_ago" => time() - $this->lastUpdated,

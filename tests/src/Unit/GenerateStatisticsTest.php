@@ -14,6 +14,7 @@ class GenerateStatisticsTest extends UpdatesLogTestBase {
    * @covers ::generateStatistics
    */
   public function testGenerateStatistics(): void {
+    $version = "1.2.3";
     $statistics = $this->updatesLog->generateStatistics(
       [
         'x' => ['status' => 'NOT_CURRENT', 'version_used' => 'x'],
@@ -23,7 +24,8 @@ class GenerateStatisticsTest extends UpdatesLogTestBase {
         'b' => ['status' => 'CURRENT', 'version_used' => 'x'],
         'c' => ['status' => '???', 'version_used' => 'x'],
 
-      ]
+      ],
+      $version
     );
     $this->assertEquals(2, $statistics['summary']['CURRENT']);
     $this->assertEquals(1, $statistics['summary']['NOT_CURRENT']);
@@ -31,6 +33,7 @@ class GenerateStatisticsTest extends UpdatesLogTestBase {
     $this->assertCount(4, $statistics['details']);
     $this->assertArrayHasKey('NOT_SECURE', $statistics['details']);
     $this->assertArrayHasKey('NOT_SUPPORTED', $statistics['details']);
+    $this->assertEquals($version, $statistics['updates_log']);
   }
 
 }
