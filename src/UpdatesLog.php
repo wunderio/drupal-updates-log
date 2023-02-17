@@ -6,6 +6,7 @@ namespace Drupal\updates_log;
 
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\State\StateInterface;
+use Drupal\Core\Site\Settings;
 use Drupal\update\UpdateManagerInterface;
 use Drupal\update\UpdateProcessorInterface;
 use Psr\Log\LoggerInterface;
@@ -109,7 +110,14 @@ class UpdatesLog {
     }
     if (getenv('UPDATES_LOG_TEST') || ($now >= $this->getLastRanStatistics() + (60 * 60 * 24))) {
       $version = $this->getVersion();
-      $statistics = $this->generateStatistics($statuses, $version);
+      $site = $this->getSite();
+      $env = $this->getEnv();
+      $statistics = $this->generateStatistics(
+        $statuses,
+        $version,
+        $site,
+        $env
+      );
       $this->logStatistics($statistics);
       $this->state->set(self::STATISTICS_TIME_STATE, $now);
     }
@@ -308,19 +316,84 @@ class UpdatesLog {
   }
 
   /**
+   * Find out site name.
+   *
+   * @return string
+   *   A site name or id, for example "acme-support-web".
+   */
+  public function getSite(): string {
+
+    /*
+     * NB! Url::fromRoute('<front>') does not work.
+     * Because the hostname usually comes from the request.
+     */
+
+    $dou = getenv('DRUSH_OPTIONS_URI');
+    $dou = is_string($dou) ? $dou : '';
+    $dou = parse_url($dou, PHP_URL_HOST);
+
+    foreach ([
+      getenv('PROJECT_NAME'),
+      getenv('HOSTNAME'),
+      $dou,
+    ] as $site) {
+      if (!empty($site)) {
+        return $site;
+      }
+    }
+
+    return 'unknown';
+  }
+
+  /**
+   * Find out site env.
+   *
+   * @return string
+   *   A site name or id, for example "acme-support-web".
+   */
+  public function getEnv(): string {
+
+    $sei = Settings::get('simple_environment_indicator') ?? '';
+    $sei = preg_replace('/^[^ ]+ /', '', $sei);
+
+    foreach ([
+      getenv('ENVIRONMENT_NAME'),
+      getenv('WKV_SITE_ENV'),
+      $sei,
+    ] as $env) {
+      if (!empty($env)) {
+        return $env;
+      }
+    }
+
+    return 'unknown';
+  }
+
+  /**
    * Generates "Statistics" of module states and versions.
    *
    * @param array $statuses
    *   An array of statuses.
    * @param string $version
    *   The versin of UpdatesLog.
+   * @param string $site
+   *   The the Drupal project id, for example acme-support-web.
+   * @param string $env
+   *   The environment, for example dev, stg, prod.
    *
    * @return array
    *   The statistics array.
    */
-  public function generateStatistics(array $statuses, string $version): array {
+  public function generateStatistics(
+    array $statuses,
+    string $version,
+    string $site,
+    string $env
+  ): array {
     $statistics = [
       "updates_log" => $version,
+      "site" => $site,
+      "env" => $env,
       "last_check_epoch" => $this->lastUpdated,
       "last_check_human" => gmdate('Y-m-d\Th:i:sZT', $this->lastUpdated),
       "last_check_ago" => time() - $this->lastUpdated,

@@ -15,6 +15,8 @@ class GenerateStatisticsTest extends UpdatesLogTestBase {
    */
   public function testGenerateStatistics(): void {
     $version = "1.2.3";
+    $site = 'acme-support-web';
+    $env = 'staging';
     $statistics = $this->updatesLog->generateStatistics(
       [
         'x' => ['status' => 'NOT_CURRENT', 'version_used' => 'x'],
@@ -25,7 +27,9 @@ class GenerateStatisticsTest extends UpdatesLogTestBase {
         'c' => ['status' => '???', 'version_used' => 'x'],
 
       ],
-      $version
+      $version,
+      $site,
+      $env
     );
     $this->assertEquals(2, $statistics['summary']['CURRENT']);
     $this->assertEquals(1, $statistics['summary']['NOT_CURRENT']);
@@ -34,6 +38,8 @@ class GenerateStatisticsTest extends UpdatesLogTestBase {
     $this->assertArrayHasKey('NOT_SECURE', $statistics['details']);
     $this->assertArrayHasKey('NOT_SUPPORTED', $statistics['details']);
     $this->assertEquals($version, $statistics['updates_log']);
+    $this->assertEquals($site, $statistics['site']);
+    $this->assertEquals($env, $statistics['env']);
   }
 
 }

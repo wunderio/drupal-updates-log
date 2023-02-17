@@ -6,7 +6,7 @@ use Drupal\KernelTests\KernelTestBase;
 use Drupal\updates_log\UpdatesLog;
 
 /**
- * Tests that fetching the version of updates_log.
+ * Tests fetching the version of updates_log.
  *
  * @group updates_log
  */
