@@ -118,6 +118,7 @@ The "prefix" (`updates_log_statistics=`) is there to help filter and parse the d
 - Clone `updates_log` project into `web/modules/custom/updates_log`
 - Edit `.lando.yml` to disable unneeded services and their proxies (`chrome`, `elasticsearch`, `kibana`, `mailhog`, `node`)
 - `lando start` - Start up the development environment
+- `lando composer install` - Install GrumPHP
 - `lando drush site-install` - Populate the database
 - `lando drush en updates_log` - Enable the module
 - `lando drush cron` or
@@ -127,8 +128,11 @@ The "prefix" (`updates_log_statistics=`) is there to help filter and parse the d
 
 ### Making releases
 
+* Make sure all changes have tests
+* Make sure all tests pass
+* Maks sure code scan is clean
 * Update the `updates_log.info.yml`
-* Create a release with the same version in the GitHub.
+* Create a release with the same version in the GitHub
 
 ## Debugging - What to do when you don't see expected results?
 

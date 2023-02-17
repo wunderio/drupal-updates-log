@@ -266,7 +266,11 @@ class UpdatesLog {
 
     $available = update_get_available(TRUE);
 
-    /** @var array<string, array{status: int}> $available */
+    // Function update_calculate_project_data not found.
+    /**
+     * @phpstan-ignore-next-line
+     * @var array<string, array{status: int}> $available
+     */
     $project_data = update_calculate_project_data($available);
 
     ksort($project_data);
@@ -308,6 +312,8 @@ class UpdatesLog {
    *
    * @param array $statuses
    *   An array of statuses.
+   * @param string $version
+   *   The versin of UpdatesLog.
    *
    * @return array
    *   The statistics array.

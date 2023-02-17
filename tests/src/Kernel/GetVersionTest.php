@@ -10,7 +10,7 @@ use Drupal\updates_log\UpdatesLog;
  *
  * @group updates_log
  */
-class RunTest extends KernelTestBase {
+class GetVersionTest extends KernelTestBase {
 
   /**
    * The UpdatesLog service.
@@ -42,8 +42,8 @@ class RunTest extends KernelTestBase {
    * @covers ::getVersion
    */
   public function testGetVersion(): void {
-      $version = $this->updatesLogService->getVersion();
-      $this->assertMatchesRegularExpression('/^\d+\.\d+\.\d+$/', $version);
+    $version = $this->updatesLogService->getVersion();
+    $this->assertMatchesRegularExpression('/^\d+\.\d+\.\d+$/', $version);
   }
 
 }
