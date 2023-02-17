@@ -8,9 +8,11 @@ use Drupal\updates_log\UpdatesLog;
 /**
  * Tests that UpdatesLog does not crash during full run.
  *
+ * NB! RunTest is already reserved.
+ *
  * @group updates_log
  */
-class RunTest extends KernelTestBase {
+class UpdatesLogRunTest extends KernelTestBase {
 
   /**
    * The UpdatesLog service.

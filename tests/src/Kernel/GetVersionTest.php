@@ -25,6 +25,7 @@ class RunTest extends KernelTestBase {
    * @var array
    */
   protected static $modules = [
+    'update',
     'updates_log',
   ];
 
