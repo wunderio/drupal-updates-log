@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\updates_log\Unit;
 
+use Drupal\Core\Extension\ExtensionList;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\State\State;
 use Drupal\Tests\UnitTestCase;
@@ -47,6 +48,7 @@ abstract class UpdatesLogTestBase extends UnitTestCase {
     $logger_factory = $this->prophet->prophesize(LoggerChannelFactoryInterface::class);
     $update_manager = $this->prophet->prophesize(UpdateManagerInterface::class);
     $update_processor = $this->prophet->prophesize(UpdateProcessorInterface::class);
+    $module_extension_list = $this->prophet->prophesize(ExtensionList::class);
 
     // When doing \Drupal::logger('updates_log') return the mock logger.
     // @codingStandardsIgnoreStart
@@ -65,7 +67,8 @@ abstract class UpdatesLogTestBase extends UnitTestCase {
       $state->reveal(),
       $logger_factory->reveal(),
       $update_manager->reveal(),
-      $update_processor->reveal()
+      $update_processor->reveal(),
+      $module_extension_list->reveal()
     );
   }
 

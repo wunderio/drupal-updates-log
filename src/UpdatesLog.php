@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\updates_log;
 
+use Drupal\Core\Extension\ExtensionList;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\State\StateInterface;
 use Drupal\Core\Site\Settings;
@@ -58,6 +59,13 @@ class UpdatesLog {
   private UpdateProcessorInterface $updateProcessor;
 
   /**
+   * The ExtensionList.
+   *
+   * @var \Drupal\Core\Extension\ExtensionList
+   */
+  private ExtensionList $extensionList;
+
+  /**
    * UpdatesLog constructor.
    *
    * @param \Drupal\Core\State\StateInterface $state
@@ -68,18 +76,22 @@ class UpdatesLog {
    *   The UpdateManagerInterface.
    * @param \Drupal\update\UpdateProcessorInterface $updateProcessor
    *   The UpdateProcessorInterface.
+   * @param \Drupal\Core\Extension\ExtensionList $moduleExtensionList
+   *   The ExtensionList.
    */
   public function __construct(
     StateInterface $state,
     LoggerChannelFactoryInterface $loggerChannelFactory,
     UpdateManagerInterface $updateManager,
-    UpdateProcessorInterface $updateProcessor
+    UpdateProcessorInterface $updateProcessor,
+    ExtensionList $moduleExtensionList
   ) {
     $this->state = $state;
     $this->logger = $loggerChannelFactory->get('updates_log');
     $this->updateManager = $updateManager;
     $this->updateProcessor = $updateProcessor;
     $this->lastUpdated = $state->get('update.last_check', 0);
+    $this->extensionList = $moduleExtensionList;
   }
 
   /*
@@ -310,7 +322,7 @@ class UpdatesLog {
    *   A version string like "1.2.3".
    */
   public function getVersion(): string {
-    $data = \Drupal::service('extension.list.module')->getExtensionInfo('updates_log');
+    $data = $this->extensionList->getExtensionInfo('updates_log');
     $version = $data['version'];
     return $version;
   }
