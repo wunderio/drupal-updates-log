@@ -49,10 +49,10 @@ Status codes are taken from the Drupal code:
   - `CURRENT`
 
 - `web/core/modules/update/src/UpdateFetcherInterface.php`
-  - `???` (`NOT_CHECKED`)
-  - `???` (`UNKNOWN`)
-  - `???` (`NOT_FETCHED`)
-  - `???` (`FETCH_PENDING`)
+  - `NOT_CHECKED`
+  - `UNKNOWN`
+  - `NOT_FETCHED`
+  - `FETCH_PENDING`
 
 ## Timing
 
@@ -90,10 +90,12 @@ Every state change will have its own log entry.
 The module also logs "Statistics" once in 24h that gives a quick overview about how many modules there are and in what statuses.
 ```
 updates_log_statistics={
-  "updates_log": "2.0",
+  "updates_log": "2.0.1",
   "last_check_epoch": 1672835445,
   "last_check_human": "2023-01-04T12:30:450GMT",
   "last_check_ago": 16,
+  "site": "project-acme-support",
+  "env": "prod",
   "summary": {
     "CURRENT": 31,
     "NOT_CURRENT": 0,
@@ -112,17 +114,46 @@ updates_log_statistics={
 
 The "prefix" (`updates_log_statistics=`) is there to help filter and parse the data from the log entry.
 
+### Site
+
+The `site` identifies project.
+It is detected by using first non-empty item:
+- Env `PROJECT_NAME`
+- Env `HOSTNAME`
+- Env `DRUSH_OPTIONS_URI` + hostname extraction
+- `"unknown"`
+
+### Env
+
+The `env` identifies environment (dev, staging, producion, etc).
+It is detected by using first non-empty item:
+- Env `ENVIRONMENT_NAME`
+- Env `WKV_SITE_ENV`
+- Settings `simple_environment_indicator` + color removal
+- `"unknown"`
+
 ## Development of `updates_log`
 
-For Development, I suggest the [drupal-project](https://github.com/wunderio/drupal-project) as a base.
-
+- Clone [drupal-project](https://github.com/wunderio/drupal-project) as a base
+- Clone `updates_log` project into `web/modules/custom/updates_log`
+- Edit `.lando.yml` to disable unneeded services and their proxies (`chrome`, `elasticsearch`, `kibana`, `mailhog`, `node`)
 - `lando start` - Start up the development environment
-- clone this project into `web/modules/custom/updates_log`
-- `lando drush en updates_log` enable the module
+- `lando composer install` - Install GrumPHP
+- `lando drush site-install` - Populate the database
+- `lando drush en updates_log` - Enable the module
 - `lando drush cron` or
   - ssh into the container `lando ssh` and run `UPDATES_LOG_TEST=1 drush cron` to bypass the time checks
 - `lando grumphp run` for code scanning
 - `lando phpunit --group=updates_log` for running tests
+
+### Making releases
+
+* Make sure all changes have tests
+* Make sure all tests pass
+* Make sure code scan is clean
+* Update `README.md`
+* Update `version` in the `updates_log.info.yml`
+* Create a release with the same version in the GitHub
 
 ## Debugging - What to do when you don't see expected results?
 

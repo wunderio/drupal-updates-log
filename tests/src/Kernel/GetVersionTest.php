@@ -6,11 +6,11 @@ use Drupal\KernelTests\KernelTestBase;
 use Drupal\updates_log\UpdatesLog;
 
 /**
- * Tests that UpdatesLog does not crash during full run.
+ * Tests fetching the version of updates_log.
  *
  * @group updates_log
  */
-class RunTest extends KernelTestBase {
+class GetVersionTest extends KernelTestBase {
 
   /**
    * The UpdatesLog service.
@@ -39,16 +39,11 @@ class RunTest extends KernelTestBase {
   }
 
   /**
-   * @covers ::Run
+   * @covers ::getVersion
    */
-  public function testCrash(): void {
-    try {
-      $this->updatesLogService->run();
-      $this->assertTrue(TRUE);
-    }
-    catch (\Exception $exception) {
-      $this->fail("Run failed with: " . $exception->getMessage());
-    }
+  public function testGetVersion(): void {
+    $version = $this->updatesLogService->getVersion();
+    $this->assertMatchesRegularExpression('/^\d+\.\d+\.\d+$/', $version);
   }
 
 }
