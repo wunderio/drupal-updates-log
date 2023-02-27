@@ -28,11 +28,11 @@ As an alternative there is Warden, but it lacks highly configurable alerting.
 On hourly basis it logs the differences of the statuses of modules like this (if there are any changes):
 
 ```
- ---- -------------- ------------- ---------- -------------------------------------------------------------------
+ ---- -------------- ------------- ---------- ---------------------------------------------------------------------
   ID   Date           Type          Severity   Message
- ---- -------------- ------------- ---------- -------------------------------------------------------------------
-  1    01/Jul 15:43   updates_log   Info      updates_log={"project":"drupal","old":"CURRENT","new":"NOT_SECURE"}
- ---- -------------- ------------- ---------- -------------------------------------------------------------------
+ ---- -------------- ------------- ---------- ---------------------------------------------------------------------
+  1    01/Jul 15:43   updates_log   Info      updates_log={"project":"drupal","old":"CURRENT","new":"NOT_SECURE"}==
+ ---- -------------- ------------- ---------- ---------------------------------------------------------------------
 ```
 
 `old` and `new` denote statuses.
@@ -71,7 +71,11 @@ The diff log entries may be generated as often as once per hour.
 
 `updates_log.statuses` - Module "current" statuses are kept in this state variable. Required to be able to perform diff. To observe the contents of it run the following command: `drush sget updates_log.statuses --format=json`.
 
-## Output: Diff
+## Output
+
+The generic format is `id={json}==`. There are two equal-signs at the end to mark the end of the JSON. It is needed, because in some logging environment there is additional encapsulation used which makes parsing impossible.
+
+### Diff
 
 When there are any changes in module statuses, then their output in the logs looks as follows:
 
@@ -80,12 +84,12 @@ updates_log={
   project: "webform",
   old: "NOT_CURRENT",
   new: "CURRENT"
-}
+}==
 ```
 
 Every state change will have its own log entry.
 
-## Output: Statistics
+### Statistics
 
 The module also logs "Statistics" once in 24h that gives a quick overview about how many modules there are and in what statuses.
 ```
@@ -109,7 +113,7 @@ updates_log_statistics={
        "admin_toolbar": "3.1.0"
     }
   }
-}
+}==
 ```
 
 The "prefix" (`updates_log_statistics=`) is there to help filter and parse the data from the log entry.
