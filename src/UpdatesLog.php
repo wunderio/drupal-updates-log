@@ -111,29 +111,79 @@ class UpdatesLog {
 
     $this->refresh();
     $statuses = $this->statusesGet();
-    $old_statuses = $this->getLastStatuses();
 
+    $this->runDiff($statuses);
+    $this->runStatistics($statuses, $now);
+
+    $this->state->set(self::TIME_STATE, $now);
+  }
+
+  /**
+   * The top-level logic of the module.
+   *
+   * @param array $statuses
+   *   The statuses array.
+   */
+  public function runDiff(
+    array $statuses
+  ): void {
+
+    $old_statuses = $this->getLastStatuses();
     $diff = $this->computeDiff($statuses, $old_statuses);
 
-    if (!empty($diff)) {
-      $this->logDiff($diff);
-      $new_statuses = $this->statusesIntegrate($statuses, $old_statuses);
-      $this->state->set(self::STATUSES_STATE, $new_statuses);
+    if (empty($diff)) {
+      return;
     }
-    if (getenv('UPDATES_LOG_TEST') || ($now >= $this->getLastRanStatistics() + (60 * 60 * 24))) {
-      $version = $this->getVersion();
-      $site = $this->getSite();
-      $env = $this->getEnv();
-      $statistics = $this->generateStatistics(
-        $statuses,
-        $version,
-        $site,
-        $env
-      );
-      $this->logStatistics($statistics);
-      $this->state->set(self::STATISTICS_TIME_STATE, $now);
+
+    $this->logDiff($diff);
+    $new_statuses = $this->statusesIntegrate($statuses, $old_statuses);
+    $this->state->set(self::STATUSES_STATE, $new_statuses);
+  }
+
+  /**
+   * The top-level logic of the module.
+   *
+   * @param array $statuses
+   *   The statuses array.
+   * @param int $now
+   *   The now timestamp.
+   *
+   * @return int
+   *   For testing: 0 - Success. 1 - skipped. 2 - cannot fetch.
+   */
+  public function runStatistics(
+    array $statuses,
+    int $now
+  ): int {
+
+    if (
+      !getenv('UPDATES_LOG_TEST')
+      &&
+      !($now >= $this->getLastRanStatistics() + (60 * 60 * 24))
+    ) {
+      return 1;
     }
-    $this->state->set(self::TIME_STATE, $now);
+
+    $version = $this->getVersion();
+    $site = $this->getSite();
+    $env = $this->getEnv();
+    $statistics = $this->generateStatistics(
+      $statuses,
+      $version,
+      $site,
+      $env
+    );
+
+    // https://www.drupal.org/project/drupal/issues/2920285
+    // Update module can get 'stuck' with 'no releases available.
+    if ($statistics['summary']['UNKNOWN'] > 0) {
+      $this->logUnknown();
+      return 2;
+    }
+
+    $this->logStatistics($statistics);
+    $this->state->set(self::STATISTICS_TIME_STATE, $now);
+    return 0;
   }
 
   /**
@@ -419,8 +469,11 @@ class UpdatesLog {
       ],
       'details' => [],
     ];
+
     foreach ($statuses as $project => $data) {
+
       $status = $data['status'];
+
       if (array_key_exists($status, $statistics['summary'])) {
         $statistics['summary'][$status] += 1;
       }
@@ -431,6 +484,7 @@ class UpdatesLog {
       if ($status === 'CURRENT') {
         continue;
       }
+
       $statistics['details'][$status][$project] = $data['version_used'];
     }
 
@@ -451,6 +505,13 @@ class UpdatesLog {
       $json = $exception->getMessage();
     }
     $this->logger->info('updates_log_statistics=@placeholder', ["@placeholder" => $json]);
+  }
+
+  /**
+   * Log the error when unable to to get module statuses.
+   */
+  public function logUnknown(): void {
+    $this->logger->warning('Unable to fetch statuses.');
   }
 
   /**
