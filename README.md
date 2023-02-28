@@ -161,7 +161,7 @@ It is detected by using first non-empty item:
 
 ## Debugging - What to do when you don't see expected results?
 
-Use the `UPDATES_LOG_TEST` environment variable to bypass the time requirement for testing `UPDATES_LOG_TEST=1 drush cron`. This applies to both (hourly and daily) functional modes. After running this you should get full statistics in logs, and if there are any state changes, these should have its own log entries too.
+Use the `UPDATES_LOG_TEST` environment variable to bypass the time requirement for testing `UPDATES_LOG_TEST=1 drush cron` or `UPDATES_LOG_TEST=1 drush eval 'updates_log_cron();'`. This applies to both (hourly and daily) functional modes. After running this you should get full statistics in logs, and if there are any state changes, these should have its own log entries too.
 
 Here are few more things to try:
 
