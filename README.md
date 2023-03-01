@@ -166,7 +166,13 @@ Use the `UPDATES_LOG_TEST` environment variable to bypass the time requirement f
 Here are few more things to try:
 
 - Check the status at "Available updates" report. Is it red or green?
-- Run this `drush eval '$available = update_get_available(TRUE); $project_data = update_calculate_project_data($available); var_dump($project_data);'`
-- Run this `drush sget updates_log.statuses --format=json`
-- Run this `drush sget updates_log.last`
-- Run this `drush sget updates_log_statistics.last`
+- `drush eval 'var_dump(update_get_available(TRUE));` - should return large array.
+- `drush eval '$available = update_get_available(TRUE); $project_data = update_calculate_project_data($available); var_dump($project_data);'`
+- `drush sget updates_log.statuses --format=json`
+- `drush sget updates_log.last`
+- `drush sget updates_log_statistics.last`
+- `drush pm-uninstall -y updates_log update; drush pm-install -y update updates_log`
+- `drush ev '\Drupal::keyValue('update_fetch_task')->deleteAll();'` - after `update` reinstall
+- `drush sqlq 'truncate batch'`
+- `drush sqlq 'truncate queue'`
+- make sure `/admin/reports/updates/settings` loads, and is configured
