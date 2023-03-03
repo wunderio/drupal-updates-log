@@ -2,6 +2,7 @@
 
 namespace tests\src\Kernel;
 
+use Drupal\Core\Site\Settings;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\updates_log\UpdatesLog;
 
@@ -36,6 +37,31 @@ class GetEnvTest extends KernelTestBase {
     parent::setUp();
     $this->installConfig(['updates_log']);
     $this->updatesLogService = \Drupal::service('updates_log.updates_logger');
+
+    putenv("ENVIRONMENT_NAME");
+    putenv("WKV_SITE_ENV");
+
+    new Settings([]);
+  }
+
+  /**
+   * @covers ::getEnv
+   */
+  public function testGetEnvSettingsUle(): void {
+    $value = 'xxx';
+    new Settings(['updates_log_env' => $value]);
+    $env = $this->updatesLogService->getEnv();
+    $this->assertEquals($value, $env);
+  }
+
+  /**
+   * @covers ::getEnv
+   */
+  public function testGetEnvSettingsSei(): void {
+    $value = 'xxx';
+    new Settings(['simple_environment_indicator' => "#aabbcc $value"]);
+    $env = $this->updatesLogService->getEnv();
+    $this->assertEquals($value, $env);
   }
 
   /**
@@ -44,7 +70,6 @@ class GetEnvTest extends KernelTestBase {
   public function testGetEnvEnvironmentName(): void {
     $value = 'xxx';
     putenv("ENVIRONMENT_NAME=$value");
-    putenv("WKV_SITE_ENV");
     $env = $this->updatesLogService->getEnv();
     $this->assertEquals($value, $env);
   }
@@ -54,13 +79,10 @@ class GetEnvTest extends KernelTestBase {
    */
   public function testGetEnvWkvSiteEnv(): void {
     $value = 'xxx';
-    putenv("ENVIRONMENT_NAME");
     putenv("WKV_SITE_ENV=$value");
     $env = $this->updatesLogService->getEnv();
     $this->assertEquals($value, $env);
   }
-
-  // It is too hard to test Settings::get('simple_environment_indicator')
 
   /**
    * @covers ::getEnv
