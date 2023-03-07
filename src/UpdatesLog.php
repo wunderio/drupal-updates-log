@@ -458,6 +458,12 @@ class UpdatesLog {
     string $site,
     string $env
   ): array {
+
+    $drupal = $statuses['drupal']['version_used'] ?? '???';
+    if (preg_match('/^(\d+)\.(\d+)\.(\d+)$/', $drupal, $matches)) {
+      $drupal = sprintf('%02d.%02d.%02d', $matches[1], $matches[2], $matches[3]);
+    }
+
     $statistics = [
       "updates_log" => $version,
       "site" => $site,
@@ -465,6 +471,7 @@ class UpdatesLog {
       "last_check_epoch" => $this->lastUpdated,
       "last_check_human" => gmdate('Y-m-d\Th:i:sZT', $this->lastUpdated),
       "last_check_ago" => time() - $this->lastUpdated,
+      "drupal" => $drupal,
       "summary" => [
         "CURRENT" => 0,
         "NOT_CURRENT" => 0,
