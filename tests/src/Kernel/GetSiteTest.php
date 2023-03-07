@@ -2,6 +2,7 @@
 
 namespace tests\src\Kernel;
 
+use Drupal\Core\Site\Settings;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\updates_log\UpdatesLog;
 
@@ -33,9 +34,15 @@ class GetSiteTest extends KernelTestBase {
    * {@inheritdoc}
    */
   protected function setUp(): void {
+
     parent::setUp();
     $this->installConfig(['updates_log']);
     $this->updatesLogService = \Drupal::service('updates_log.updates_logger');
+
+    putenv("PROJECT_NAME");
+    putenv("HOSTNAME");
+    putenv("DRUSH_OPTIONS_URI");
+    new Settings([]);
   }
 
   /**
@@ -44,8 +51,16 @@ class GetSiteTest extends KernelTestBase {
   public function testGetSiteProjectName(): void {
     $value = 'xxx';
     putenv("PROJECT_NAME=$value");
-    putenv("HOSTNAME");
-    putenv("DRUSH_OPTIONS_URI");
+    $site = $this->updatesLogService->getSite();
+    $this->assertEquals($value, $site);
+  }
+
+  /**
+   * @covers ::getSite
+   */
+  public function testGetSiteSettings(): void {
+    $value = 'xxx';
+    new Settings(['updates_log_site' => $value]);
     $site = $this->updatesLogService->getSite();
     $this->assertEquals($value, $site);
   }
@@ -55,9 +70,7 @@ class GetSiteTest extends KernelTestBase {
    */
   public function testGetSiteHostname(): void {
     $value = 'xxx';
-    putenv("PROJECT_NAME");
     putenv("HOSTNAME=$value");
-    putenv("DRUSH_OPTIONS_URI");
     $site = $this->updatesLogService->getSite();
     $this->assertEquals($value, $site);
   }
@@ -67,8 +80,6 @@ class GetSiteTest extends KernelTestBase {
    */
   public function testGetSiteDrushOptionsUri(): void {
     $value = 'xxx';
-    putenv("PROJECT_NAME");
-    putenv("HOSTNAME=$value");
     putenv("DRUSH_OPTIONS_URI=https://$value/yyy");
     $site = $this->updatesLogService->getSite();
     $this->assertEquals($value, $site);

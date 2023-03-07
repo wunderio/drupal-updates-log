@@ -385,6 +385,8 @@ class UpdatesLog {
    */
   public function getSite(): string {
 
+    $uls = Settings::get('updates_log_site', '');
+
     /*
      * NB! Url::fromRoute('<front>') does not work.
      * Because the hostname usually comes from the request.
@@ -395,6 +397,7 @@ class UpdatesLog {
     $dou = parse_url($dou, PHP_URL_HOST);
 
     foreach ([
+      $uls,
       getenv('PROJECT_NAME'),
       getenv('HOSTNAME'),
       $dou,
@@ -415,10 +418,13 @@ class UpdatesLog {
    */
   public function getEnv(): string {
 
-    $sei = Settings::get('simple_environment_indicator') ?? '';
+    $ule = Settings::get('updates_log_env', '');
+
+    $sei = Settings::get('simple_environment_indicator', '');
     $sei = preg_replace('/^[^ ]+ /', '', $sei);
 
     foreach ([
+      $ule,
       getenv('ENVIRONMENT_NAME'),
       getenv('WKV_SITE_ENV'),
       $sei,
