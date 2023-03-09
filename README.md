@@ -174,7 +174,7 @@ Here are few more things to try:
 - `drush sget updates_log.last`
 - `drush sget updates_log_statistics.last`
 - `drush pm-uninstall -y updates_log update; drush pm-install -y update updates_log`
-- `drush ev '\Drupal::keyValue('update_fetch_task')->deleteAll();'` - after `update` reinstall
+- `drush ev '\Drupal::keyValue("update_fetch_task")->deleteAll();'` - after `update` reinstall
 - `drush sqlq 'truncate batch'`
 - `drush sqlq 'truncate queue'`
 - make sure `/admin/reports/updates/settings` loads, and is configured
