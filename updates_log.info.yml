@@ -1,9 +1,9 @@
-name: Update Logging
+name: Updates Log
 type: module
 description: "Log module update info"
 core: 8.x
 core_version_requirement: ^8 || ^9 || ^10
 package: Development
-version: 2.1.0
+version: 2.1.1
 dependencies:
   - drupal:update
