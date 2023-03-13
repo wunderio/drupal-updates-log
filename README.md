@@ -167,15 +167,18 @@ Use the `UPDATES_LOG_TEST` environment variable to bypass the time requirement f
 
 Here are few more things to try:
 
-- Check the status at "Available updates" report. Is it red or green?
-- `drush eval 'var_dump(update_get_available(TRUE));` - should return large array.
-- `drush eval '$available = update_get_available(TRUE); $project_data = update_calculate_project_data($available); var_dump($project_data);'`
-- `drush sget updates_log.statuses --format=json`
-- `drush sget updates_log.last`
-- `drush sget updates_log_statistics.last`
-- `drush sdel update.last_check`
-- `drush pm-uninstall -y updates_log update; drush pm-install -y update updates_log`
-- `drush ev '\Drupal::keyValue("update_fetch_task")->deleteAll();'` - after `update` reinstall
-- `drush sqlq 'truncate batch'`
-- `drush sqlq 'truncate queue'`
-- make sure `/admin/reports/updates/settings` loads, and is configured
+- Drupal `update` module:
+  - Make sure `/admin/reports/updates/settings` loads, and is configured
+  - Check the status at "Available updates" report. Is it red or green?
+  - `drush eval 'var_dump(update_get_available(TRUE));` - should return large array.
+  - `drush eval '$available = update_get_available(TRUE); $project_data = update_calculate_project_data($available); var_dump($project_data);'`
+  - `drush ev '\Drupal::keyValue("update_fetch_task")->deleteAll();'` - after `update` reinstall
+  - `drush sqlq 'truncate batch'`
+  - `drush sqlq 'truncate queue'`
+  - `drush pm-uninstall -y update; drush pm-install -y update`
+  - `drush sdel update.last_check`
+- Updates Log:
+  - `UPDATES_LOG_TEST=1 drush cron`
+  - `UPDATES_LOG_TEST=1 drush eval 'updates_log_cron();'`  - `drush sget updates_log.statuses --format=json`
+  - `drush sget updates_log.last`
+  - `drush sget updates_log_statistics.last`
