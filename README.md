@@ -122,7 +122,7 @@ The "prefix" (`updates_log_statistics=`) is there to help filter and parse the d
 
 The `site` identifies project.
 It is detected by using first non-empty item:
-- Settings `updates_log_site`
+- `$settings['updates_log_site']`
 - Env `PROJECT_NAME`
 - Env `HOSTNAME`
 - Env `DRUSH_OPTIONS_URI` + hostname extraction
@@ -132,7 +132,7 @@ It is detected by using first non-empty item:
 
 The `env` identifies environment (dev, staging, producion, etc).
 It is detected by using first non-empty item:
-- Settings `updates_log_env`
+- `$settings['updates_log_env']`
 - Env `ENVIRONMENT_NAME`
 - Env `WKV_SITE_ENV`
 - Settings `simple_environment_indicator` + color removal
