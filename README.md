@@ -138,6 +138,12 @@ It is detected by using first non-empty item:
 - Settings `simple_environment_indicator` + color removal
 - `"unknown"`
 
+### Settings
+
+You can add `$settings['updates_log_disabled'] = TRUE;` in your `settings.php` to stop updates_log from reporting.
+
+This is useful for sites that want to report updates in only one environment.
+
 ## Development of `updates_log`
 
 - Clone [drupal-project](https://github.com/wunderio/drupal-project) as a base

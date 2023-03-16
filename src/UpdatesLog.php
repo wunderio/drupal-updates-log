@@ -105,7 +105,7 @@ class UpdatesLog {
 
     $now = time();
     $last = $this->getLastRan();
-    if (!$this->shouldUpdate($now, $last)) {
+    if (!$this->shouldUpdate($now, $last) || Settings::get('updates_log_disabled', FALSE)) {
       return;
     }
 
