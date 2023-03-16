@@ -3,6 +3,7 @@
 namespace Drupal\Tests\updates_log\Kernel;
 
 use Drupal\Core\Site\Settings;
+use Drupal\Core\Database\Connection;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\updates_log\UpdatesLog;
 
@@ -19,6 +20,13 @@ class UpdatesLogDisabledTest extends KernelTestBase {
    * @var \Drupal\updates_log\UpdatesLog
    */
   private UpdatesLog $updatesLogService;
+
+  /**
+   * The Database Connection.
+   *
+   * @var \Drupal\Core\Database\Connection
+   */
+  private Connection $db;
 
   /**
    * The modules to load to run the test.
@@ -42,6 +50,9 @@ class UpdatesLogDisabledTest extends KernelTestBase {
     $this->db = \Drupal::database();
   }
 
+  /**
+   * Test that there is no output when disabled = TRUE.
+   */
   public function testDisabledDoesNotRun(): void {
     new Settings(['updates_log_disabled' => TRUE]);
     $this->updatesLogService->run();
@@ -51,8 +62,9 @@ class UpdatesLogDisabledTest extends KernelTestBase {
   }
 
   /**
-   * @return void
-   * @depends  Drupal\Tests\updates_log\Kernel\UpdatesLogRunTest::testCrash
+   * If UpdatesLogRunTest::testCrash is good then we know this works.
+   *
+   * @depends Drupal\Tests\updates_log\Kernel\UpdatesLogRunTest::testCrash
    */
   public function testNotDisabledRuns(): void {
     $this->assertTrue(TRUE);
