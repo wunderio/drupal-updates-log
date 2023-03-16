@@ -138,7 +138,7 @@ It is detected by using first non-empty item:
 - Settings `simple_environment_indicator` + color removal
 - `"unknown"`
 
-### Settings
+## Settings
 
 You can add `$settings['updates_log_disabled'] = TRUE;` in your `settings.php` to stop updates_log from reporting.
 
