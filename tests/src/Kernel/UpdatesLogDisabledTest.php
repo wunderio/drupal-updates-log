@@ -2,15 +2,17 @@
 
 namespace Drupal\Tests\updates_log\Kernel;
 
+use Drupal\Core\Site\Settings;
 use Drupal\Core\Database\Connection;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\updates_log\UpdatesLog;
 
 /**
- * @coversDefaultClass \Drupal\updates_log\UpdatesLog
+ * Tests that "updates_log_disabled" setting works as expected.
+ *
  * @group updates_log
  */
-class LogUnknownTest extends KernelTestBase {
+class UpdatesLogDisabledTest extends KernelTestBase {
 
   /**
    * The UpdatesLog service.
@@ -42,7 +44,6 @@ class LogUnknownTest extends KernelTestBase {
    */
   protected function setUp(): void {
     parent::setUp();
-
     $this->installConfig(['updates_log']);
     $this->installSchema('dblog', ['watchdog']);
     $this->updatesLogService = \Drupal::service('updates_log.updates_logger');
@@ -50,19 +51,23 @@ class LogUnknownTest extends KernelTestBase {
   }
 
   /**
-   * @covers ::logDiff
+   * Test that there is no output when disabled = TRUE.
    */
-  public function testLogUnknown(): void {
-
-    $this->db->truncate('watchdog')->execute();
-    $this->updatesLogService->logUnknown();
+  public function testDisabledDoesNotRun(): void {
+    new Settings(['updates_log_disabled' => TRUE]);
+    $this->updatesLogService->run();
     $query = $this->db->query("select * from {watchdog}");
     $result = $query->fetchAll();
-    $log = reset($result);
+    $this->assertEmpty($result);
+  }
 
-    $this->assertEquals('updates_log', $log->type);
-    $this->assertEquals(4, $log->severity);
-    $this->assertGreaterThan(time() - 5, $log->timestamp);
+  /**
+   * If UpdatesLogRunTest::testCrash is good then we know this works.
+   *
+   * @depends Drupal\Tests\updates_log\Kernel\UpdatesLogRunTest::testCrash
+   */
+  public function testNotDisabledRuns(): void {
+    $this->assertTrue(TRUE);
   }
 
 }

@@ -1,8 +1,6 @@
 <?php
 
-namespace tests\src\Unit;
-
-use Drupal\Tests\updates_log\Unit\UpdatesLogTestBase;
+namespace Drupal\Tests\updates_log\Unit;
 
 /**
  * @coversDefaultClass \Drupal\updates_log\UpdatesLog
