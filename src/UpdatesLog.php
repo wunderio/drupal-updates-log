@@ -102,10 +102,12 @@ class UpdatesLog {
    * The top-level logic of the module.
    */
   public function run(): void {
-
+    if (Settings::get('updates_log_disabled', FALSE)) {
+      return;
+    }
     $now = time();
     $last = $this->getLastRan();
-    if (!$this->shouldUpdate($now, $last) || Settings::get('updates_log_disabled', FALSE)) {
+    if (!$this->shouldUpdate($now, $last)) {
       return;
     }
 
