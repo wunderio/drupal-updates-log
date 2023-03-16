@@ -1,6 +1,6 @@
 <?php
 
-namespace tests\src\Kernel;
+namespace Drupal\Tests\updates_log\Kernel;
 
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\updates_log\UpdatesLog;
