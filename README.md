@@ -164,6 +164,7 @@ This is useful for sites that want to report updates in only one environment.
 * Make sure all tests pass
 * Make sure code scan is clean
 * Update `README.md`
+* Update Drupal Project template if needed
 * Update `version` in the `updates_log.info.yml`
 * Create a release with the same version in the GitHub
 
