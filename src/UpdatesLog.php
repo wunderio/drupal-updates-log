@@ -113,6 +113,10 @@ class UpdatesLog {
 
     $this->refresh();
     $statuses = $this->statusesGet();
+    if (empty($statuses)) {
+      $this->logUnknown();
+      return;
+    }
 
     $this->runDiff($statuses);
     $this->runStatistics($statuses, $now);
@@ -316,7 +320,7 @@ class UpdatesLog {
    * Get module statuses from Drupal.
    *
    * @return array
-   *   Return array of statuses.
+   *   Return array of statuses. Will be an empty array if Drupal is messed up.
    */
   public function statusesGet(): array {
 
@@ -337,6 +341,9 @@ class UpdatesLog {
     ];
 
     $available = update_get_available(TRUE);
+    if (empty($available)) {
+      return [];
+    }
 
     // Function update_calculate_project_data not found.
     /**
