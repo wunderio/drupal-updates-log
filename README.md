@@ -186,6 +186,7 @@ Here are few more things to try:
   - `drush sdel update.last_check`
 - Updates Log:
   - `UPDATES_LOG_TEST=1 drush cron`
-  - `UPDATES_LOG_TEST=1 drush eval 'updates_log_cron();'`  - `drush sget updates_log.statuses --format=json`
+  - `UPDATES_LOG_TEST=1 drush eval 'updates_log_cron();'`
+  - `drush sget updates_log.statuses --format=json`
   - `drush sget updates_log.last`
   - `drush sget updates_log_statistics.last`
