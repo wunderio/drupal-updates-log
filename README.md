@@ -190,3 +190,9 @@ Here are few more things to try:
   - `drush sget updates_log.statuses --format=json`
   - `drush sget updates_log.last`
   - `drush sget updates_log_statistics.last`
+
+## Drupal core bug
+
+There is a Drupal core bug which in certain situation would not fetch new data, or would not fetch it for some projects.
+The remedy is to apply the patch in the issue:
+https://www.drupal.org/project/drupal/issues/2920285
