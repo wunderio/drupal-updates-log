@@ -194,5 +194,4 @@ Here are few more things to try:
 ## Drupal core bug
 
 There is a Drupal core bug which in certain situation would not fetch new data, or would not fetch it for some projects.
-The remedy is to apply the patch in the issue:
-https://www.drupal.org/project/drupal/issues/2920285
+The remedy is to apply [the patch](https://www.drupal.org/files/issues/2021-06-12/2920285-22.patch) in [this issue](https://www.drupal.org/project/drupal/issues/2920285).
