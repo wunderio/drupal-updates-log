@@ -102,9 +102,6 @@ class UpdatesLog {
    * The top-level logic of the module.
    */
   public function run(): void {
-    if (Settings::get('updates_log_disabled', FALSE)) {
-      return;
-    }
     $now = time();
     $last = $this->getLastRan();
     if (!$this->shouldUpdate($now, $last)) {
@@ -204,7 +201,13 @@ class UpdatesLog {
    *   False = don't update. True = do update.
    */
   public function shouldUpdate(int $now, ?int $last): bool {
-    if ($last === NULL || getenv('UPDATES_LOG_TEST')) {
+    if (getenv('UPDATES_LOG_TEST')) {
+      return TRUE;
+    }
+    if (Settings::get('updates_log_disabled', FALSE)) {
+      return FALSE;
+    }
+    if ($last === NULL) {
       return TRUE;
     }
     // Run every hour.
