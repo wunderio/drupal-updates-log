@@ -48,13 +48,15 @@ class UpdatesLogDisabledTest extends KernelTestBase {
     $this->installSchema('dblog', ['watchdog']);
     $this->updatesLogService = \Drupal::service('updates_log.updates_logger');
     $this->db = \Drupal::database();
+    putenv("UPDATES_LOG_TEST");
+
   }
 
   /**
    * Test that there is no output when disabled = TRUE.
    */
   public function testDisabledDoesNotRun(): void {
-    new Settings(['updates_log_disabled' => TRUE]);
+    new Settings(['updates_log_disabled' => TRUE, 'hash_salt' => 'notsosecurehash']);
     $this->updatesLogService->run();
     $query = $this->db->query("select * from {watchdog}");
     $result = $query->fetchAll();
