@@ -35,6 +35,7 @@ class RefreshTest extends KernelTestBase {
   protected function setUp(): void {
     parent::setUp();
     $this->installConfig(['updates_log']);
+    $this->installConfig(['update']);
     $this->updatesLogService = \Drupal::service('updates_log.updates_logger');
   }
 
