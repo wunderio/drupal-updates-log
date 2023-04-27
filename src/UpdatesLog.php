@@ -311,9 +311,16 @@ class UpdatesLog {
    * Update module statuses, get the fresh data from internet.
    *
    * Ripped from update_cron().
+   * Note, that the refresh is quite tricky.
+   * It is easy to clash with update_cron() and get into broken state.
+   * See also: https://www.drupal.org/project/drupal/issues/2920285
    */
   public function refresh(): void {
-
+    $last_check = $this->state->get('update.last_check', 0);
+    $request_time = \Drupal::time()->getRequestTime();
+    if ($request_time - $last_check > 1 * 60 * 60) {
+      return;
+    }
     $this->updateManager->refreshUpdateData();
     $this->updateProcessor->fetchData();
     update_clear_update_disk_cache();
