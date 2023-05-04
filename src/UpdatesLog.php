@@ -349,10 +349,12 @@ class UpdatesLog {
       -3 => 'NOT_FETCHED',
       -4 => 'FETCH_PENDING',
     ];
-
-    $available = update_get_available(TRUE);
+    $available = $this->updateManager->getProjects();
     if (empty($available)) {
-      return [];
+      $available = update_get_available(TRUE);
+      if (empty($available)) {
+        return [];
+      }
     }
 
     // Function update_calculate_project_data not found.
