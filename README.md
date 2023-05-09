@@ -18,10 +18,13 @@ As an alternative there is Warden, but it lacks highly configurable alerting.
 ## Install
 
 1. Install the module: `composer require wunderio/updates_log:^2`
-2. Enable the module: `drush en -y updates_log`
-3. Optional: By using [Config Split](https://www.drupal.org/project/config_split) keep module enabled only in the default branch.
-4. Export the configuration: `drush cex -y`
-5. To verify the operations run `drush cron`. At the first cron execution it will report all the modules from "unknown" state to the "known" state. Check your logs!
+2. Install a core patch for `update` module [bug](https://www.drupal.org/project/drupal/issues/2920285):
+  1. For D9 use [this patch](https://www.drupal.org/files/issues/2021-06-12/2920285-23.patch)
+  2. For D10 use [this patch](https://www.drupal.org/files/issues/2022-03-30/update-module-stuck-mr782-dedup-2920285-35.patch)
+3. Enable the module: `drush en -y updates_log`
+4. Optional: By using [Config Split](https://www.drupal.org/project/config_split) keep module enabled only in the default branch.
+5. Export the configuration: `drush cex -y`
+6. To verify the operations run `drush cron`. At the first cron execution it will report all the modules from "unknown" state to the "known" state. Check your logs!
 
 ## Usage
 
@@ -193,5 +196,4 @@ Here are few more things to try:
 
 ## Drupal core bug
 
-There is a Drupal core bug which in certain situation would not fetch new data, or would not fetch it for some projects.
-The remedy is to apply [the patch](https://www.drupal.org/files/issues/2021-06-12/2920285-22.patch) in [this issue](https://www.drupal.org/project/drupal/issues/2920285).
+There is a Drupal [core bug](https://www.drupal.org/project/drupal/issues/2920285) which in certain situation would not fetch new data, or would not fetch it for some projects. See details in the install instructions.
