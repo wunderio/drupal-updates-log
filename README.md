@@ -19,8 +19,8 @@ As an alternative there is Warden, but it lacks highly configurable alerting.
 
 1. Install the module: `composer require wunderio/updates_log:^2`
 2. Install a core patch for `update` module [bug](https://www.drupal.org/project/drupal/issues/2920285):
-  1. For D9 use [this patch](https://www.drupal.org/files/issues/2021-06-12/2920285-23.patch)
-  2. For D10 use [this patch](https://www.drupal.org/files/issues/2022-03-30/update-module-stuck-mr782-dedup-2920285-35.patch)
+    1. For D9 use [this patch](https://www.drupal.org/files/issues/2021-06-12/2920285-23.patch)
+    2. For D10 use [this patch](https://www.drupal.org/files/issues/2022-03-30/update-module-stuck-mr782-dedup-2920285-35.patch)
 3. Enable the module: `drush en -y updates_log`
 4. Optional: By using [Config Split](https://www.drupal.org/project/config_split) keep module enabled only in the default branch.
 5. Export the configuration: `drush cex -y`
