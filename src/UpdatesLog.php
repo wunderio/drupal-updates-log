@@ -66,6 +66,20 @@ class UpdatesLog {
   private ExtensionList $extensionList;
 
   /**
+   * The Site name.
+   *
+   * @var string
+   */
+  private string $site;
+
+  /**
+   * The Env name.
+   *
+   * @var string
+   */
+  private string $env;
+
+  /**
    * UpdatesLog constructor.
    *
    * @param \Drupal\Core\State\StateInterface $state
@@ -92,6 +106,9 @@ class UpdatesLog {
     $this->updateProcessor = $updateProcessor;
     $this->lastUpdated = $state->get('update.last_check', 0);
     $this->extensionList = $moduleExtensionList;
+
+    $this->site = $this->getSite();
+    $this->env = $this->getEnv();
   }
 
   /*
@@ -168,13 +185,11 @@ class UpdatesLog {
     }
 
     $version = $this->getVersion();
-    $site = $this->getSite();
-    $env = $this->getEnv();
     $statistics = $this->generateStatistics(
       $statuses,
       $version,
-      $site,
-      $env
+      $this->site,
+      $this->env
     );
 
     // https://www.drupal.org/project/drupal/issues/2920285
@@ -292,6 +307,8 @@ class UpdatesLog {
         'project' => $project,
         'old' => $status['old'],
         'new' => $status['new'],
+        'site' => $this->site,
+        'env' => $this->env,
       ];
       try {
         $json = json_encode($log, JSON_THROW_ON_ERROR);

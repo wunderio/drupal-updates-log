@@ -31,11 +31,11 @@ As an alternative there is Warden, but it lacks highly configurable alerting.
 On hourly basis it logs the differences of the statuses of modules like this (if there are any changes):
 
 ```
- ---- -------------- ------------- ---------- ---------------------------------------------------------------------
+ ---- -------------- ------------- ---------- ------------------------------------------------------------------------------------------------------
   ID   Date           Type          Severity   Message
- ---- -------------- ------------- ---------- ---------------------------------------------------------------------
-  1    01/Jul 15:43   updates_log   Info      updates_log={"project":"drupal","old":"CURRENT","new":"NOT_SECURE"}==
- ---- -------------- ------------- ---------- ---------------------------------------------------------------------
+ ---- -------------- ------------- ---------- ------------------------------------------------------------------------------------------------------
+  1    01/Jul 15:43   updates_log   Info      updates_log={"project":"drupal","old":"CURRENT","new":"NOT_SECURE","site":"example.com","env:"prod"}==
+ ---- -------------- ------------- ---------- ------------------------------------------------------------------------------------------------------
 ```
 
 `old` and `new` denote statuses.
@@ -87,6 +87,8 @@ updates_log={
   project: "webform",
   old: "NOT_CURRENT",
   new: "CURRENT"
+  site: "example.com"
+  env: "prod"
 }==
 ```
 
@@ -97,7 +99,7 @@ Every state change will have its own log entry.
 The module also logs "Statistics" once in 24h that gives a quick overview about how many modules there are and in what statuses.
 ```
 updates_log_statistics={
-  "updates_log": "2.0.1",
+  "updates_log": "2.4.0",
   "last_check_epoch": 1672835445,
   "last_check_human": "2023-01-04T12:30:450GMT",
   "last_check_ago": 16,
