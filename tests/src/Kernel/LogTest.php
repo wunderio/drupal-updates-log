@@ -3,6 +3,7 @@
 namespace Drupal\Tests\updates_log\Kernel;
 
 use Drupal\Core\Database\Connection;
+use Drupal\Core\Site\Settings;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\updates_log\UpdatesLog;
 
@@ -43,6 +44,11 @@ class LogTest extends KernelTestBase {
   protected function setUp(): void {
     parent::setUp();
 
+    new Settings([
+      'updates_log_site' => 'site',
+      'updates_log_env' => 'env',
+    ]);
+
     $this->installConfig(['updates_log']);
     $this->installSchema('dblog', ['watchdog']);
     $this->updatesLogService = \Drupal::service('updates_log.updates_logger');
@@ -64,7 +70,7 @@ class LogTest extends KernelTestBase {
 
     $this->assertEquals('updates_log', $log->type);
     $this->assertEquals('updates_log=@placeholder==', $log->message);
-    $this->assertEquals('a:1:{s:12:"@placeholder";s:44:"{"project":"drupal","old":"old","new":"new"}";}', $log->variables);
+    $this->assertEquals('a:1:{s:12:"@placeholder";s:70:"{"project":"drupal","old":"old","new":"new","site":"site","env":"env"}";}', $log->variables);
     $this->assertEquals(6, $log->severity);
     $this->assertGreaterThan(time() - 5, $log->timestamp);
   }
