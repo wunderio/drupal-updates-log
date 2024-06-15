@@ -181,7 +181,7 @@ Use the `UPDATES_LOG_TEST` environment variable to bypass the time requirement f
 Here are few more things to try:
 
 - Drupal `update` module:
-  - Make sure `/admin/reports/updates/settings` loads, and is configured
+  - Make sure `/admin/reports/updates/settings` loads, and is configured. Save the form again.
   - Check the status at "Available updates" report. Is it red or green?
   - `drush eval 'var_dump(update_get_available(TRUE));'` - should return large array.
   - `drush eval '$available = update_get_available(TRUE); $project_data = update_calculate_project_data($available); var_dump($project_data);'`
