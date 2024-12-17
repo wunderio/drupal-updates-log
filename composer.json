@@ -18,8 +18,7 @@
     "security"
   ],
   "require": {
-    "drupal/core": "^9 || ^10",
-    "drupal/update": "*"
+    "drupal/core": "^9 || ^10"
   },
   "version": "2.4.1"
 }
