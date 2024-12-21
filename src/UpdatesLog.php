@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Drupal\updates_log;
 
+use Composer\Json\JsonFile;
 use Drupal\Core\Extension\ExtensionList;
+use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\State\StateInterface;
 use Drupal\Core\Site\Settings;
@@ -66,6 +68,13 @@ class UpdatesLog {
   private ExtensionList $extensionList;
 
   /**
+   * The ModuleHandlerInterface.
+   *
+   * @var \Drupal\Core\Extension\ModuleHandlerInterface
+   */
+  private ModuleHandlerInterface $moduleHandler;
+
+  /**
    * The Site name.
    *
    * @var string
@@ -92,13 +101,16 @@ class UpdatesLog {
    *   The UpdateProcessorInterface.
    * @param \Drupal\Core\Extension\ExtensionList $moduleExtensionList
    *   The ExtensionList.
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
+   *   The ModuleHandlerInterface.
    */
   public function __construct(
     StateInterface $state,
     LoggerChannelFactoryInterface $loggerChannelFactory,
     UpdateManagerInterface $updateManager,
     UpdateProcessorInterface $updateProcessor,
-    ExtensionList $moduleExtensionList
+    ExtensionList $moduleExtensionList,
+    ModuleHandlerInterface $moduleHandler
   ) {
     $this->state = $state;
     $this->logger = $loggerChannelFactory->get('updates_log');
@@ -106,6 +118,7 @@ class UpdatesLog {
     $this->updateProcessor = $updateProcessor;
     $this->lastUpdated = $state->get('update.last_check', 0);
     $this->extensionList = $moduleExtensionList;
+    $this->moduleHandler = $moduleHandler;
 
     $this->site = $this->getSite();
     $this->env = $this->getEnv();
@@ -408,8 +421,12 @@ class UpdatesLog {
    *   A version string like "1.2.3".
    */
   public function getVersion(): string {
-    $data = $this->extensionList->getExtensionInfo('updates_log');
-    $version = $data['version'];
+    $module_name = 'updates_log';
+    $module_path = $this->moduleHandler->getModule($module_name)->getPath();
+    $composer_file_path = "$module_path/composer.json";
+    $json_file = new JsonFile($composer_file_path);
+    $composer_data = $json_file->read();
+    $version = $composer_data['version'];
     return $version;
   }
 
