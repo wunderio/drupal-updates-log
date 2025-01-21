@@ -4,6 +4,5 @@ description: "Log module update info"
 core: 8.x
 core_version_requirement: ^8 || ^9 || ^10
 package: Development
-version: 2.4.0
 dependencies:
   - drupal:update
