@@ -1,28 +1,25 @@
 {
-    "name": "wunderio/updates_log",
-    "type": "drupal-module",
-    "description": "Log module update info",
-    "homepage": "https://github.com/wunderio/drupal-updates-log",
-    "authors": [
-        {
-            "name": "Ragnar Kurm",
-            "email": "ragnar.kurm@wunder.io",
-            "homepage": "https://github.com/ragnarkurmwunder",
-            "role": "Owner"
-        },
-        {
-            "name": "Juhani Christian Moilanen",
-            "email": "juhani.moilanen@wunder.io",
-            "homepage": "https://github.com/Juhani-moilanen",
-            "role": "Owner"
-        }
-    ],
-    "keywords": [
-        "drupal",
-        "updates",
-        "log",
-        "security"
-    ],
-    "license": "GPL-3.0",
-    "version": "2.4.2"
+  "name": "wunderio/updates_log",
+  "type": "drupal-module",
+  "description": "Logs detailed information about module updates.",
+  "homepage": "https://github.com/wunderio/drupal-updates-log",
+  "authors": [
+    {
+      "name": "Ragnar Kurm",
+      "email": "ragnar.kurm@wunder.io",
+      "homepage": "https://github.com/ragnarkurmwunder",
+      "role": "Owner"
+    }
+  ],
+  "keywords": [
+    "drupal",
+    "updates",
+    "log",
+    "security"
+  ],
+  "require": {
+    "composer/composer": "^2",
+    "drupal/core": "^9 || ^10"
+  },
+  "version": "2.4.2"
 }
