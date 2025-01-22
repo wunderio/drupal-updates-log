@@ -171,7 +171,7 @@ This is useful for sites that want to report updates in only one environment.
 * Make sure code scan is clean
 * Update `README.md`
 * Update Drupal Project template if needed
-* Update `version` in the `updates_log.info.yml`
+* Update `version` in the `composer.json`
 * Create a release with the same version in the GitHub
 
 ## Debugging - What to do when you don't see expected results?
