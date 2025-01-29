@@ -339,21 +339,32 @@ class UpdatesLog {
 
   /**
    * Update module statuses, get the fresh data from internet.
+   * It is a tricky process, and can easily lead into broken state of data
+   * when trying to mimic Drupal refrech ourselves.
    *
-   * Ripped from update_cron().
-   * Note, that the refresh is quite tricky.
-   * It is easy to clash with update_cron() and get into broken state.
-   * See also: https://www.drupal.org/project/drupal/issues/2920285
+   * The problem: Drupal default module date freshness is insufficient.
+   * The cause: it is configured in days.
+   * The goal: Refresh hourly.
+   * The solution:
+   * - Fake last check time of Update module
+   * - Rerun Drupal refresh code
    */
   public function refresh(): void {
-    $last_check = $this->state->get('update.last_check', 0);
+
+    $update_config = \Drupal::config('update.settings');
+    $frequency = $update_config->get('check.interval_days');
+    $interval = 60 * 60 * 24 * $frequency;
+    $last_check = \Drupal::state()->get('update.last_check', 0);
     $request_time = \Drupal::time()->getRequestTime();
-    if ($request_time - $last_check > 1 * 60 * 60) {
+    if ($request_time - $last_check < 1 * 60 * 60) {
       return;
     }
-    $this->updateManager->refreshUpdateData();
-    $this->updateProcessor->fetchData();
-    update_clear_update_disk_cache();
+
+    // Fake the last check time of Update module.
+    // To trigger the update functionality.
+    $this->state->set('update.last_check', $request_time - $interval - 1);
+    // Let the Update module handle the updating process.
+    update_cron();
   }
 
   /**
