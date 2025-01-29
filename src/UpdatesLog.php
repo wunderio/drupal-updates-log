@@ -558,10 +558,6 @@ class UpdatesLog {
         $statistics['summary']['UNKNOWN'] += 1;
       }
 
-      if ($status === 'CURRENT') {
-        continue;
-      }
-
       $statistics['details'][$status][$project] = $data['version_used'];
     }
 
