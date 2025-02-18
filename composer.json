@@ -19,7 +19,7 @@
   ],
   "require": {
     "composer/composer": "^2",
-    "drupal/core": "^9 || ^10"
+    "drupal/core": "^9 || ^10 || ^11"
   },
-  "version": "2.5.0"
+  "version": "2.5.1"
 }
