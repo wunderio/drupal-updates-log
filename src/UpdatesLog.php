@@ -364,7 +364,23 @@ class UpdatesLog {
     // To trigger the update functionality.
     $this->state->set('update.last_check', $request_time - $interval - 1);
     // Let the Update module handle the updating process.
-    update_cron();
+
+    // QAG-69
+    // Sometimes the updates_cron() cannot be called.
+    // It could be a problem of:
+    // - missing/disabled module
+    // - update module not loaded (delayed?)
+    // - namespacing issue
+    if (!\Drupal::moduleHandler()->moduleExists('update')) {
+      $this->logger->warning('Updates Log is unable to fetch fresh module versions because: Core update module not enabled.');
+      return;
+    }
+    module_load_include('module', 'update');
+    if (!function_exists('\update_cron')) {
+      $this->logger->warning('Updates Log is unable to fetch fresh module versions because: update_log() is not defined!');
+      return;
+    }
+    \update_cron();
   }
 
   /**
