@@ -21,22 +21,16 @@ jobs:
       id: get_tag_version
       run: |
         TAG_REF="${{ github.ref }}"
-        # Remove 'refs/tags/' prefix and 'v' prefix
         TAG_VERSION=$(echo "${TAG_REF#refs/tags/}")
-        echo "version=$TAG_VERSION" >> $GITHUB_OUTPUT
+        echo "version=$TAG_VERSION" >> "$GITHUB_OUTPUT"
         echo "Tag version is: $TAG_VERSION"
 
     - name: Get composer.json version
       id: get_composer_version
       run: |
-        # Use jq to parse the JSON and get the version field
-        # Install jq if not available (usually is on runners)
-        # sudo apt-get update && sudo apt-get install -y jq
         COMPOSER_VERSION=$(jq -r '.version' composer.json)
-        echo "version=$COMPOSER_VERSION" >> $GITHUB_OUTPUT
+        echo "version=$COMPOSER_VERSION" >> "$GITHUB_OUTPUT"
         echo "composer.json version is: $COMPOSER_VERSION"
-        # Fail the step if composer.json doesn't exist or jq fails
-        # Add check for file existence if needed: test -f composer.json
 
     - name: Compare versions
       run: |
@@ -47,5 +41,5 @@ jobs:
           echo "✅ Versions match! Tag: $TAG_VERSION, composer.json: $COMPOSER_VERSION"
         else
           echo "❌ Versions do NOT match! Tag: $TAG_VERSION, composer.json: $COMPOSER_VERSION"
-          exit 1 # Fail the job
+          exit 1
         fi
