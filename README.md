@@ -166,7 +166,7 @@ This is useful for sites that want to report updates in only one environment.
 
 ### Making releases
 
-See [PR template](.github/PULL_REQUEST_TEMPLATE.md)
+See [PR template](.github/PULL_REQUEST_TEMPLATE.md).
 
 ## Debugging - What to do when you don't see expected results?
 
