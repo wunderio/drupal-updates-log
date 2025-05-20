@@ -173,6 +173,7 @@ This is useful for sites that want to report updates in only one environment.
 * Update Drupal Project template if needed
 * Update `version` in the `composer.json`
 * Create a release with the same version in the GitHub
+* Check version validation workflow in GiHub Actions
 
 ## Debugging - What to do when you don't see expected results?
 
