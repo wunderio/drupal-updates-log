@@ -1,0 +1,45 @@
+name: Validate Release Tag vs Composer Version
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  check_version_match:
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        # Fetch the specific commit pointed to by the tag
+        ref: ${{ github.ref }}
+
+    - name: Get tag version
+      id: get_tag_version
+      run: |
+        TAG_REF="${{ github.ref }}"
+        TAG_VERSION=$(echo "${TAG_REF#refs/tags/}")
+        echo "version=$TAG_VERSION" >> "$GITHUB_OUTPUT"
+        echo "Tag version is: $TAG_VERSION"
+
+    - name: Get composer.json version
+      id: get_composer_version
+      run: |
+        COMPOSER_VERSION=$(jq -r '.version' composer.json)
+        echo "version=$COMPOSER_VERSION" >> "$GITHUB_OUTPUT"
+        echo "composer.json version is: $COMPOSER_VERSION"
+
+    - name: Compare versions
+      run: |
+        TAG_VERSION="${{ steps.get_tag_version.outputs.version }}"
+        COMPOSER_VERSION="${{ steps.get_composer_version.outputs.version }}"
+
+        if [ "$TAG_VERSION" = "$COMPOSER_VERSION" ]; then
+          echo "✅ Versions match! Tag: $TAG_VERSION, composer.json: $COMPOSER_VERSION"
+        else
+          echo "❌ Versions do NOT match! Tag: $TAG_VERSION, composer.json: $COMPOSER_VERSION"
+          exit 1
+        fi
