@@ -216,7 +216,7 @@ This is useful for sites that want to report updates in only one environment.
 3. Edit `.lando.yml` to disable unneeded services and their proxies:
 
    ```yaml
-   # Disable: chrome, elasticsearch, kibana, mailhog, node
+   # Disable: chrome, elasticsearch, kibana, mailpit, node
    ```
 
 4. Start the development environment:
