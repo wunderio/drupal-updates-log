@@ -29,7 +29,7 @@ While alternatives like Warden exist, Updates Log offers more configurable alert
 
 ### Requirements
 
-- Drupal 9 or 10
+- Drupal 9, 10, or 11
 - Composer
 - Drush
 
@@ -45,6 +45,8 @@ While alternatives like Warden exist, Updates Log offers more configurable alert
    - For Drupal 9 use [this patch](https://www.drupal.org/files/issues/2021-06-12/2920285-23.patch)
    - For Drupal 10 use [this patch](https://www.drupal.org/files/issues/2022-03-30/update-module-stuck-mr782-dedup-2920285-35.patch)
    - For Drupal 10.1.5+ use [this patch](https://www.drupal.org/files/issues/2023-10-10/update-module-stuck.patch)
+   - For Drupal 10.2.2+ use [this patch](https://www.drupal.org/files/issues/2024-01-26/2920285-51.patch)
+   - For Drupal 11, you may still encounter this issue. If you do, try the workarounds in the troubleshooting section
 
 3. Enable the module:
 
@@ -310,9 +312,16 @@ If you're experiencing issues with the update module:
    drush eval '$available = update_get_available(TRUE); $project_data = update_calculate_project_data($available); var_dump($project_data);'
    ```
 
-4. Reset update module state:
+4. Reset update module state (try these solutions in order until one works):
 
    ```bash
+   # Solution 1: Clear the update fetch task
+   drush php:eval "\Drupal::keyValue('update_fetch_task')->deleteAll();"
+
+   # Solution 2: If Solution 1 doesn't work, try uninstalling and reinstalling the update module
+   drush pm-uninstall -y update && drush pm-enable -y update
+
+   # Solution 3: If Solutions 1 and 2 don't work, try the full reset
    drush ev '\Drupal::keyValue("update_fetch_task")->deleteAll();'
    drush sqlq 'truncate batch'
    drush sqlq 'truncate queue'
@@ -334,7 +343,21 @@ drush sget updates_log_statistics.last
 
 ### Drupal core bug
 
-There is a Drupal [core bug](https://www.drupal.org/project/drupal/issues/2920285) which in certain situations would not fetch new data, or would not fetch it for some projects. See details in the installation instructions for the required patches.
+There is a Drupal [core bug](https://www.drupal.org/project/drupal/issues/2920285) which in certain situations would not fetch new data, or would only fetch it for some projects but not others. This issue has been reported across multiple Drupal versions including Drupal 9, 10, and 11.
+
+Symptoms of this issue include:
+
+- "No update information available" message
+- Only some modules showing update information while others don't
+- Update information not refreshing even after running cron
+
+The issue can sometimes be resolved by:
+
+1. Applying the appropriate patch for your Drupal version (see installation instructions)
+2. Clearing the update fetch task cache (see troubleshooting section)
+3. Uninstalling and reinstalling the update module
+
+This issue has been partially fixed in various Drupal versions, but may still occur. The patches and workarounds listed in this README have been reported to help in most cases.
 
 ## Contributing
 
