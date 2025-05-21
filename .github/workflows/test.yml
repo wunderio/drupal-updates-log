@@ -1,0 +1,89 @@
+name: Run Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to run tests on'
+        required: true
+        default: 'main'
+        type: string
+
+jobs:
+  test:
+    name: Run PHPUnit Tests
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: drupal
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        ref: ${{ github.event_name == 'workflow_dispatch' && inputs.branch || github.ref }}
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.3'
+        extensions: mbstring, xml, curl, gd, intl, json, mysql, pdo, zip
+        coverage: xdebug
+
+    - name: Get composer cache directory
+      id: composer-cache
+      run: echo "dir=$(composer config cache-files-dir)" >> "${GITHUB_OUTPUT}"
+
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: "${{ steps.composer-cache.outputs.dir }}"
+        key: "${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}"
+        restore-keys: "${{ runner.os }}-composer-"
+
+    - name: Create Drupal project
+      run: |
+        composer create-project drupal/recommended-project:^11 drupal
+        cd drupal
+        composer config --no-plugins allow-plugins.composer/installers true
+        composer config --no-plugins allow-plugins.drupal/core-composer-scaffold true
+        composer config --no-plugins allow-plugins.drupal/core-project-message true
+        composer config --no-plugins allow-plugins.drupal/core-vendor-hardening true
+
+    - name: Install module
+      run: |
+        cd drupal
+        mkdir -p web/modules/custom
+        cp -r ../updates_log web/modules/custom/
+
+    - name: Setup Drupal
+      run: |
+        cd drupal/web
+        cp sites/example.settings.local.php sites/default/settings.local.php
+        cp sites/example.settings.php sites/default/settings.php
+        sed -i 's/database = \[/database = \[ \n      "default" => \[ \n        "default" => \[ \n          "driver" => "mysql", \n          "database" => "drupal", \n          "username" => "root", \n          "password" => "root", \n          "host" => "127.0.0.1", \n          "port" => "3306", \n        \], \n      \],/' sites/default/settings.php
+        ../vendor/bin/drush site:install --db-url="mysql://root:root@127.0.0.1:3306/drupal" -y
+        ../vendor/bin/drush en updates_log -y
+
+    - name: Run Tests
+      run: |
+        cd drupal/web
+        ../vendor/bin/phpunit -c core/phpunit.xml.dist ../modules/custom/updates_log/tests
+      env:
+        SIMPLETEST_DB: "mysql://root:root@127.0.0.1:3306/drupal"
+        SIMPLETEST_BASE_URL: "http://localhost"
+        BROWSERTEST_OUTPUT_DIRECTORY: "/tmp"
+        Drupal_Test_Base_Url: "http://localhost"
+        UPDATES_LOG_TEST: "1"
+        ENVIRONMENT_NAME: "test"
+        PROJECT_NAME: "updates-log-test"
