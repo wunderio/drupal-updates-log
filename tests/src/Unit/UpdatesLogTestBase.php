@@ -2,8 +2,12 @@
 
 namespace Drupal\Tests\updates_log\Unit;
 
+use Drupal\Component\Datetime\TimeInterface;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Extension\ExtensionList;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
+use Drupal\Core\Logger\LoggerChannelInterface;
+use Drupal\Core\Extension\ModuleHandler;
 use Drupal\Core\State\State;
 use Drupal\Tests\UnitTestCase;
 use Drupal\update\UpdateManagerInterface;
@@ -11,7 +15,6 @@ use Drupal\update\UpdateProcessorInterface;
 use Drupal\updates_log\UpdatesLog;
 use Prophecy\Argument;
 use Prophecy\Prophet;
-use Drupal\Core\Logger\LoggerChannelInterface;
 
 /**
  * @coversDefaultClass \Drupal\updates_log\UpdatesLog
@@ -49,6 +52,9 @@ abstract class UpdatesLogTestBase extends UnitTestCase {
     $update_manager = $this->prophet->prophesize(UpdateManagerInterface::class);
     $update_processor = $this->prophet->prophesize(UpdateProcessorInterface::class);
     $module_extension_list = $this->prophet->prophesize(ExtensionList::class);
+    $module_handler = $this->prophet->prophesize(ModuleHandler::class);
+    $config_factory = $this->prophet->prophesize(ConfigFactoryInterface::class);
+    $time_if = $this->prophet->prophesize(TimeInterface::class);
 
     // When doing \Drupal::logger('updates_log') return the mock logger.
     // @codingStandardsIgnoreStart
@@ -68,7 +74,10 @@ abstract class UpdatesLogTestBase extends UnitTestCase {
       $logger_factory->reveal(),
       $update_manager->reveal(),
       $update_processor->reveal(),
-      $module_extension_list->reveal()
+      $module_extension_list->reveal(),
+      $module_handler->reveal(),
+      $config_factory->reveal(),
+      $time_if->reveal(),
     );
   }
 

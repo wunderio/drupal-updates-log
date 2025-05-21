@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Drupal\updates_log;
 
 use Composer\Json\JsonFile;
+use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\Core\Datetime\TimeInterface;
 use Drupal\Core\Extension\ExtensionList;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
-use Drupal\Core\State\StateInterface;
 use Drupal\Core\Site\Settings;
+use Drupal\Core\State\StateInterface;
 use Drupal\update\UpdateManagerInterface;
 use Drupal\update\UpdateProcessorInterface;
 use Psr\Log\LoggerInterface;
@@ -178,7 +178,7 @@ class UpdatesLog {
   /**
    * The top-level logic of the module.
    *
-   * @param array $statuses
+   * @param array<string, array{status: string, version_used: string}> $statuses
    *   The statuses array.
    */
   public function runDiff(
@@ -200,7 +200,7 @@ class UpdatesLog {
   /**
    * The top-level logic of the module.
    *
-   * @param array $statuses
+   * @param array<string, array{status: string, version_used: string}> $statuses
    *   The statuses array.
    * @param int $now
    *   The now timestamp.
@@ -269,12 +269,12 @@ class UpdatesLog {
   /**
    * Compute old and new status differences.
    *
-   * @param array $new
+   * @param array<string, array{status: string, version_used: string}> $new
    *   New statuses.
-   * @param array $old
+   * @param array<string, string> $old
    *   Old statuses.
    *
-   * @return array
+   * @return array<string, array{old: string, new: string}>
    *   Statuses diff.
    */
   public function computeDiff(array $new, array $old): array {
@@ -304,12 +304,12 @@ class UpdatesLog {
   /**
    * Integrate old and new statuses in a safe way.
    *
-   * @param array $new
+   * @param array<string, array{status: string, version_used: string}> $new
    *   New statuses.
-   * @param array $old
+   * @param array<string, string> $old
    *   Old statuses.
    *
-   * @return array
+   * @return array<string, string>
    *   Integrated statuses.
    */
   public function statusesIntegrate(array $new, array $old): array {
@@ -334,7 +334,7 @@ class UpdatesLog {
   /**
    * Log the modules, and statuses.
    *
-   * @param array[] $statuses
+   * @param array<string, array{old: string, new: string}> $statuses
    *   An associative array of ['module_name' => ['old' => 'status_string',
    *   'new' => 'status_string']].
    */
@@ -415,7 +415,7 @@ class UpdatesLog {
   /**
    * Get module statuses from Drupal.
    *
-   * @return array
+   * @return array<string, array{status: string, version_used: string}>
    *   Return array of statuses. Will be an empty array if Drupal is messed up.
    */
   public function statusesGet(): array {
@@ -554,16 +554,26 @@ class UpdatesLog {
   /**
    * Generates "Statistics" of module states and versions.
    *
-   * @param array $statuses
+   * @param array<string, array{status: string, version_used: string}> $statuses
    *   An array of statuses.
    * @param string $version
-   *   The versin of UpdatesLog.
+   *   The version of UpdatesLog.
    * @param string $site
-   *   The the Drupal project id, for example acme-support-web.
+   *   The Drupal project id, for example acme-support-web.
    * @param string $env
    *   The environment, for example dev, stg, prod.
    *
-   * @return array
+   * @return array{
+   *   updates_log: string,
+   *   site: string,
+   *   env: string,
+   *   last_check_epoch: int,
+   *   last_check_human: string,
+   *   last_check_ago: int,
+   *   drupal: string,
+   *   summary: array<string, int>,
+   *   details: array<string, array<string, string>>
+   * }
    *   The statistics array.
    */
   public function generateStatistics(
@@ -617,7 +627,17 @@ class UpdatesLog {
   /**
    * Logs the given Statistics in json using the Logger.
    *
-   * @param array $statistics
+   * @param array{
+   *   updates_log: string,
+   *   site: string,
+   *   env: string,
+   *   last_check_epoch: int,
+   *   last_check_human: string,
+   *   last_check_ago: int,
+   *   drupal: string,
+   *   summary: array<string, int>,
+   *   details: array<string, array<string, string>>
+   * } $statistics
    *   The statistics array.
    */
   public function logStatistics(array $statistics): void {
