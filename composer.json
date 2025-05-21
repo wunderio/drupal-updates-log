@@ -3,6 +3,7 @@
   "type": "drupal-module",
   "description": "Logs detailed information about module updates.",
   "homepage": "https://github.com/wunderio/drupal-updates-log",
+  "license": "GPL-2.0-or-later",
   "authors": [
     {
       "name": "Ragnar Kurm",
@@ -21,5 +22,5 @@
     "composer/composer": "^2",
     "drupal/core": "^9 || ^10 || ^11"
   },
-  "version": "2.5.4"
+  "version": "2.5.5"
 }

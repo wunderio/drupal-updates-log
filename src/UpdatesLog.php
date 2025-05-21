@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Drupal\updates_log;
 
 use Composer\Json\JsonFile;
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Datetime\TimeInterface;
 use Drupal\Core\Extension\ExtensionList;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
@@ -68,6 +70,20 @@ class UpdatesLog {
   private ExtensionList $extensionList;
 
   /**
+   * The config factory.
+   *
+   * @var \Drupal\Core\Config\ConfigFactoryInterface
+   */
+  private ConfigFactoryInterface $configFactory;
+
+  /**
+   * The time service.
+   *
+   * @var \Drupal\Core\Datetime\TimeInterface
+   */
+  private TimeInterface $time;
+
+  /**
    * The ModuleHandlerInterface.
    *
    * @var \Drupal\Core\Extension\ModuleHandlerInterface
@@ -103,6 +119,10 @@ class UpdatesLog {
    *   The ExtensionList.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   The ModuleHandlerInterface.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
+   *   The config factory.
+   * @param \Drupal\Core\Datetime\TimeInterface $time
+   *   The time service.
    */
   public function __construct(
     StateInterface $state,
@@ -110,7 +130,9 @@ class UpdatesLog {
     UpdateManagerInterface $updateManager,
     UpdateProcessorInterface $updateProcessor,
     ExtensionList $moduleExtensionList,
-    ModuleHandlerInterface $moduleHandler
+    ModuleHandlerInterface $moduleHandler,
+    ConfigFactoryInterface $configFactory,
+    TimeInterface $time,
   ) {
     $this->state = $state;
     $this->logger = $loggerChannelFactory->get('updates_log');
@@ -119,6 +141,8 @@ class UpdatesLog {
     $this->lastUpdated = $state->get('update.last_check', 0);
     $this->extensionList = $moduleExtensionList;
     $this->moduleHandler = $moduleHandler;
+    $this->configFactory = $configFactory;
+    $this->time = $time;
 
     $this->site = $this->getSite();
     $this->env = $this->getEnv();
@@ -158,7 +182,7 @@ class UpdatesLog {
    *   The statuses array.
    */
   public function runDiff(
-    array $statuses
+    array $statuses,
   ): void {
 
     $old_statuses = $this->getLastStatuses();
@@ -186,7 +210,7 @@ class UpdatesLog {
    */
   public function runStatistics(
     array $statuses,
-    int $now
+    int $now,
   ): int {
 
     if (
@@ -339,23 +363,24 @@ class UpdatesLog {
 
   /**
    * Update module statuses, get the fresh data from internet.
+   *
    * It is a tricky process, and can easily lead into broken state of data
-   * when trying to mimic Drupal refrech ourselves.
+   * when trying to mimic Drupal refresh ourselves.
    *
    * The problem: Drupal default module date freshness is insufficient.
    * The cause: it is configured in days.
    * The goal: Refresh hourly.
    * The solution:
    * - Fake last check time of Update module
-   * - Rerun Drupal refresh code
+   * - Rerun Drupal refresh code.
    */
   public function refresh(): void {
 
-    $update_config = \Drupal::config('update.settings');
+    $update_config = $this->configFactory->get('update.settings');
     $frequency = $update_config->get('check.interval_days');
     $interval = 60 * 60 * 24 * $frequency;
-    $last_check = \Drupal::state()->get('update.last_check', 0);
-    $request_time = \Drupal::time()->getRequestTime();
+    $last_check = $this->state->get('update.last_check', 0);
+    $request_time = $this->time->getRequestTime();
     if ($request_time - $last_check < 1 * 60 * 60) {
       return;
     }
@@ -364,20 +389,24 @@ class UpdatesLog {
     // To trigger the update functionality.
     $this->state->set('update.last_check', $request_time - $interval - 1);
     // Let the Update module handle the updating process.
-
     // QAG-69
     // Sometimes the updates_cron() cannot be called.
     // It could be a problem of:
     // - missing/disabled module
     // - update module not loaded (delayed?)
-    // - namespacing issue
-    if (!\Drupal::moduleHandler()->moduleExists('update')) {
+    // - namespacing issue.
+    if (!$this->moduleHandler->moduleExists('update')) {
       $this->logger->warning('Updates Log is unable to fetch fresh module versions because: Core update module not enabled.');
       return;
     }
-    module_load_include('module', 'update');
-    if (!function_exists('\update_cron')) {
-      $this->logger->warning('Updates Log is unable to fetch fresh module versions because: update_log() is not defined!');
+
+    // Load the update module file.
+    if (!\function_exists('update_cron')) {
+      $this->moduleHandler->loadInclude('update', 'module');
+    }
+
+    if (!\function_exists('update_cron')) {
+      $this->logger->warning('Updates Log is unable to fetch fresh module versions because: update_cron() is not defined!');
       return;
     }
     \update_cron();
@@ -407,7 +436,12 @@ class UpdatesLog {
       -4 => 'FETCH_PENDING',
     ];
 
-    $available = update_get_available(TRUE);
+    // Make sure update module functions are available.
+    if (!\function_exists('update_get_available')) {
+      $this->moduleHandler->loadInclude('update', 'inc', 'update.report');
+    }
+
+    $available = \update_get_available(TRUE);
     if (empty($available)) {
       return [];
     }
@@ -417,7 +451,7 @@ class UpdatesLog {
      * @phpstan-ignore-next-line
      * @var array<string, array{status: int}> $available
      */
-    $project_data = update_calculate_project_data($available);
+    $project_data = \update_calculate_project_data($available);
 
     ksort($project_data);
     $statuses = [];
@@ -536,7 +570,7 @@ class UpdatesLog {
     array $statuses,
     string $version,
     string $site,
-    string $env
+    string $env,
   ): array {
 
     $drupal = $statuses['drupal']['version_used'] ?? '???';

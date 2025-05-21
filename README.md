@@ -1,37 +1,80 @@
 # Updates Log
 
-Log Drupal project update statuses.
+## Project overview
 
-Why? When having many Drupals around then keeping track of security updates can
-be challenging. One option is to log statuses of the modules on daily bases,
-and create alerts (for example on Slack) based on the logs. It makes sense on
-centralized logging systems like SumoLogic. It allows to create all kinds stats
-and analysis.
+Updates Log is a Drupal module that logs project update statuses. It helps track security updates across multiple Drupal installations by logging module statuses on a daily basis and creating alerts based on these logs.
 
-As an alternative there is Warden, but it lacks highly configurable alerting.
+### Why use Updates Log?
+
+When managing many Drupal sites, keeping track of security updates can be challenging. Updates Log provides:
+
+- Daily logging of module status changes
+- Centralized logging compatible with systems like SumoLogic
+- Ability to create custom alerts (e.g., on Slack) based on logs
+- Comprehensive statistics for analysis and monitoring
+
+While alternatives like Warden exist, Updates Log offers more configurable alerting capabilities.
+
+## Team
+
+- **Ragnar Kurm** - Maintainer
+- **Wunder** - Development and support
 
 ## Distribution
 
 - [Packagist](https://packagist.org/packages/wunderio/updates_log)
 - [GitHub](https://github.com/wunderio/drupal-updates-log)
 
-## Install
+## Installation
 
-1. Install the module: `composer require wunderio/updates_log:^2`
-2. Install a core patch for `update` module [bug](https://www.drupal.org/project/drupal/issues/2920285):
-    1. For D9 use [this patch](https://www.drupal.org/files/issues/2021-06-12/2920285-23.patch)
-    2. For D10 use [this patch](https://www.drupal.org/files/issues/2022-03-30/update-module-stuck-mr782-dedup-2920285-35.patch)
-    3. For D10.1.5+ use [this patch](https://www.drupal.org/files/issues/2023-10-10/update-module-stuck.patch)
-3. Enable the module: `drush en -y updates_log`
-4. Optional: By using [Config Split](https://www.drupal.org/project/config_split) keep module enabled only in the default branch.
-5. Export the configuration: `drush cex -y`
-6. To verify the operations run `drush cron`. At the first cron execution it will report all the modules from "unknown" state to the "known" state. Check your logs!
+### Requirements
+
+- Drupal 9, 10, or 11
+- Composer
+- Drush
+
+### Installation steps
+
+1. Install the module using Composer:
+
+   ```bash
+   composer require wunderio/updates_log:^2
+   ```
+
+2. Install a core patch for the `update` module [bug](https://www.drupal.org/project/drupal/issues/2920285):
+   - For Drupal 9 use [this patch](https://www.drupal.org/files/issues/2021-06-12/2920285-23.patch)
+   - For Drupal 10 use [this patch](https://www.drupal.org/files/issues/2022-03-30/update-module-stuck-mr782-dedup-2920285-35.patch)
+   - For Drupal 10.1.5+ use [this patch](https://www.drupal.org/files/issues/2023-10-10/update-module-stuck.patch)
+   - For Drupal 10.2.2+ use [this patch](https://www.drupal.org/files/issues/2024-01-26/2920285-51.patch)
+   - For Drupal 11, you may still encounter this issue. If you do, try the workarounds in the troubleshooting section
+
+3. Enable the module:
+
+   ```bash
+   drush en -y updates_log
+   ```
+
+4. Optional: By using [Config Split](https://www.drupal.org/project/config_split), keep the module enabled only in the default branch.
+
+5. Export the configuration:
+
+   ```bash
+   drush cex -y
+   ```
+
+6. Verify the installation by running cron:
+
+   ```bash
+   drush cron
+   ```
+
+   At the first cron execution, it will report all modules from "unknown" state to the "known" state. Check your logs!
 
 ## Usage
 
 On hourly basis it logs the differences of the statuses of modules like this (if there are any changes):
 
-```
+```text
  ---- -------------- ------------- ---------- ------------------------------------------------------------------------------------------------------
   ID   Date           Type          Severity   Message
  ---- -------------- ------------- ---------- ------------------------------------------------------------------------------------------------------
@@ -83,13 +126,13 @@ The generic format is `id={json}==`. There are two equal-signs at the end to mar
 
 When there are any changes in module statuses, then their output in the logs looks as follows:
 
-```
+```json
 updates_log={
-  project: "webform",
-  old: "NOT_CURRENT",
-  new: "CURRENT"
-  site: "example.com"
-  env: "prod"
+  "project": "webform",
+  "old": "NOT_CURRENT",
+  "new": "CURRENT",
+  "site": "example.com",
+  "env": "prod"
 }==
 ```
 
@@ -98,7 +141,8 @@ Every state change will have its own log entry.
 ### Statistics
 
 The module also logs "Statistics" once in 24h that gives a quick overview about how many modules there are and in what statuses.
-```
+
+```json
 updates_log_statistics={
   "updates_log": "2.5.0",
   "last_check_epoch": 1672835445,
@@ -128,6 +172,7 @@ The "prefix" (`updates_log_statistics=`) is there to help filter and parse the d
 
 The `site` identifies project.
 It is detected by using first non-empty item:
+
 - `$settings['updates_log_site']`
 - Env `PROJECT_NAME`
 - Env `HOSTNAME`
@@ -136,8 +181,9 @@ It is detected by using first non-empty item:
 
 ### Env
 
-The `env` identifies environment (dev, staging, producion, etc).
+The `env` identifies environment (dev, staging, production, etc).
 It is detected by using first non-empty item:
+
 - `$settings['updates_log_env']`
 - Env `ENVIRONMENT_NAME`
 - Env `WKV_SITE_ENV`
@@ -150,47 +196,177 @@ You can add `$settings['updates_log_disabled'] = TRUE;` in your `settings.php` t
 
 This is useful for sites that want to report updates in only one environment.
 
-## Development of `updates_log`
+## Development
 
-- Clone [drupal-project](https://github.com/wunderio/drupal-project) as a base
-- Clone `updates_log` project into `web/modules/custom/updates_log`
-- Edit `.lando.yml` to disable unneeded services and their proxies (`chrome`, `elasticsearch`, `kibana`, `mailhog`, `node`)
-- `lando start` - Start up the development environment
-- `lando composer install` - Install GrumPHP
-- `lando drush site-install` - Populate the database
-- `lando drush en updates_log` - Enable the module
-- `lando drush cron` or
-  - ssh into the container `lando ssh` and run `UPDATES_LOG_TEST=1 drush cron` to bypass the time checks
-- `lando grumphp run` for code scanning
-- `lando phpunit --group=updates_log` for running tests
+### Setting up a development environment
+
+1. Clone [drupal-project](https://github.com/wunderio/drupal-project) as a base:
+
+   ```bash
+   git clone https://github.com/wunderio/drupal-project.git
+   cd drupal-project
+   ```
+
+2. Clone the `updates_log` project into the modules directory:
+
+   ```bash
+   git clone https://github.com/wunderio/drupal-updates-log.git web/modules/custom/updates_log
+   ```
+
+3. Edit `.lando.yml` to disable unneeded services and their proxies:
+
+   ```yaml
+   # Disable: chrome, elasticsearch, kibana, mailhog, node
+   ```
+
+4. Start the development environment:
+
+   ```bash
+   lando start
+   ```
+
+5. Install dependencies:
+
+   ```bash
+   lando composer install
+   ```
+
+6. Set up the Drupal site:
+
+   ```bash
+   lando drush site-install
+   lando drush en updates_log
+   ```
+
+7. Run cron to test the module:
+
+   ```bash
+   lando drush cron
+   ```
+
+   Or bypass time checks for testing:
+
+   ```bash
+   lando ssh
+   UPDATES_LOG_TEST=1 drush cron
+   ```
+
+### Testing and quality assurance
+
+The module includes automated tests and code quality tools:
+
+1. Run code quality checks:
+
+   ```bash
+   lando grumphp run
+   ```
+
+2. Run PHPUnit tests:
+
+   ```bash
+   lando phpunit --group=updates_log
+   ```
 
 ### Making releases
 
-See [PR template](.github/PULL_REQUEST_TEMPLATE.md).
+See the [PR template](.github/PULL_REQUEST_TEMPLATE.md) for the release process.
 
-## Debugging - What to do when you don't see expected results?
+## Troubleshooting
 
-Use the `UPDATES_LOG_TEST` environment variable to bypass the time requirement for testing `UPDATES_LOG_TEST=1 drush cron` or `UPDATES_LOG_TEST=1 drush eval 'updates_log_cron();'`. This applies to both (hourly and daily) functional modes. After running this you should get full statistics in logs, and if there are any state changes, these should have its own log entries too.
+### Testing without time restrictions
 
-Here are few more things to try:
+Use the `UPDATES_LOG_TEST` environment variable to bypass the time requirement for testing:
 
-- Drupal `update` module:
-  - Make sure `/admin/reports/updates/settings` loads, and is configured. Save the form again.
-  - Check the status at "Available updates" report. Is it red or green?
-  - `drush eval 'var_dump(update_get_available(TRUE));'` - should return large array.
-  - `drush eval '$available = update_get_available(TRUE); $project_data = update_calculate_project_data($available); var_dump($project_data);'`
-  - `drush ev '\Drupal::keyValue("update_fetch_task")->deleteAll();'` - after `update` reinstall
-  - `drush sqlq 'truncate batch'`
-  - `drush sqlq 'truncate queue'`
-  - `drush pm-uninstall -y update; drush pm-install -y update`
-  - `drush sdel update.last_check`
-- Updates Log:
-  - `UPDATES_LOG_TEST=1 drush cron`
-  - `UPDATES_LOG_TEST=1 drush eval 'updates_log_cron();'`
-  - `drush sget updates_log.statuses --format=json`
-  - `drush sget updates_log.last`
-  - `drush sget updates_log_statistics.last`
+```bash
+UPDATES_LOG_TEST=1 drush cron
+```
 
-## Drupal core bug
+or
 
-There is a Drupal [core bug](https://www.drupal.org/project/drupal/issues/2920285) which in certain situation would not fetch new data, or would not fetch it for some projects. See details in the install instructions.
+```bash
+UPDATES_LOG_TEST=1 drush eval 'updates_log_cron();'
+```
+
+This applies to both hourly and daily functional modes. After running this, you should get full statistics in logs, and if there are any state changes, these should have their own log entries too.
+
+### Debugging the Drupal update module
+
+If you're experiencing issues with the update module:
+
+1. Verify the update settings:
+   - Make sure `/admin/reports/updates/settings` loads and is configured correctly
+   - Save the form again to ensure settings are applied
+   - Check the status at "Available updates" report - is it red or green?
+
+2. Debug update data:
+
+   ```bash
+   drush eval 'var_dump(update_get_available(TRUE));'
+   ```
+
+   This should return a large array.
+
+3. Check project data:
+
+   ```bash
+   drush eval '$available = update_get_available(TRUE); $project_data = update_calculate_project_data($available); var_dump($project_data);'
+   ```
+
+4. Reset update module state (try these solutions in order until one works):
+
+   ```bash
+   # Solution 1: Clear the update fetch task
+   drush php:eval "\Drupal::keyValue('update_fetch_task')->deleteAll();"
+
+   # Solution 2: If Solution 1 doesn't work, try uninstalling and reinstalling the update module
+   drush pm-uninstall -y update && drush pm-enable -y update
+
+   # Solution 3: If Solutions 1 and 2 don't work, try the full reset
+   drush ev '\Drupal::keyValue("update_fetch_task")->deleteAll();'
+   drush sqlq 'truncate batch'
+   drush sqlq 'truncate queue'
+   drush pm-uninstall -y update; drush pm-install -y update
+   drush sdel update.last_check
+   ```
+
+### Debugging Updates Log module
+
+Check the state of the Updates Log module:
+
+```bash
+drush sget updates_log.statuses --format=json
+drush sget updates_log.last
+drush sget updates_log_statistics.last
+```
+
+## Known issues
+
+### Drupal core bug
+
+There is a Drupal [core bug](https://www.drupal.org/project/drupal/issues/2920285) which in certain situations would not fetch new data, or would only fetch it for some projects but not others. This issue has been reported across multiple Drupal versions including Drupal 9, 10, and 11.
+
+Symptoms of this issue include:
+
+- "No update information available" message
+- Only some modules showing update information while others don't
+- Update information not refreshing even after running cron
+
+The issue can sometimes be resolved by:
+
+1. Applying the appropriate patch for your Drupal version (see installation instructions)
+2. Clearing the update fetch task cache (see troubleshooting section)
+3. Uninstalling and reinstalling the update module
+
+This issue has been partially fixed in various Drupal versions, but may still occur. The patches and workarounds listed in this README have been reported to help in most cases.
+
+## Contributing
+
+Contributions to the Updates Log module are welcome! Please follow these steps:
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Run tests to ensure code quality
+5. Submit a pull request
+
+Please follow the coding standards and include tests for new functionality.
