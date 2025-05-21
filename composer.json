@@ -22,5 +22,5 @@
     "composer/composer": "^2",
     "drupal/core": "^9 || ^10 || ^11"
   },
-  "version": "2.5.4"
+  "version": "2.5.5"
 }
