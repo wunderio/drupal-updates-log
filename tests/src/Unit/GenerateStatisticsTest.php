@@ -32,7 +32,7 @@ class GenerateStatisticsTest extends UpdatesLogTestBase {
     $this->assertEquals(3, $statistics['summary']['CURRENT']);
     $this->assertEquals(1, $statistics['summary']['NOT_CURRENT']);
     $this->assertEquals(1, $statistics['summary']['UNKNOWN']);
-    $this->assertCount(4, $statistics['details']);
+    $this->assertCount(5, $statistics['details']);
     $this->assertArrayHasKey('NOT_SECURE', $statistics['details']);
     $this->assertArrayHasKey('NOT_SUPPORTED', $statistics['details']);
     $this->assertEquals($version, $statistics['updates_log']);
