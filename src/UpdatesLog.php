@@ -373,9 +373,12 @@ class UpdatesLog {
    * The solution:
    * - Fake last check time of Update module
    * - Rerun Drupal refresh code.
+   *
+   * In Drupal 11, the update_cron() function was removed and replaced with
+   * service-based approach. This method handles both Drupal 10 and 11
+   * compatibility.
    */
   public function refresh(): void {
-
     $update_config = $this->configFactory->get('update.settings');
     $frequency = $update_config->get('check.interval_days');
     $interval = 60 * 60 * 24 * $frequency;
@@ -388,18 +391,30 @@ class UpdatesLog {
     // Fake the last check time of Update module.
     // To trigger the update functionality.
     $this->state->set('update.last_check', $request_time - $interval - 1);
-    // Let the Update module handle the updating process.
-    // QAG-69
-    // Sometimes the updates_cron() cannot be called.
-    // It could be a problem of:
-    // - missing/disabled module
-    // - update module not loaded (delayed?)
-    // - namespacing issue.
+
+    // Check if the update module is enabled.
     if (!$this->moduleHandler->moduleExists('update')) {
       $this->logger->warning('Updates Log is unable to fetch fresh module versions because: Core update module not enabled.');
       return;
     }
 
+    // Check Drupal version to determine which approach to use.
+    if (version_compare(\Drupal::VERSION, '11.0.0', '>=')) {
+      // Drupal 11+ approach using services.
+      $this->refreshDrupal11();
+    }
+    else {
+      // Drupal 10 and earlier approach using procedural functions.
+      $this->refreshDrupal10();
+    }
+  }
+
+  /**
+   * Refresh module statuses using Drupal 10 approach.
+   *
+   * Uses the procedural update_cron() function.
+   */
+  protected function refreshDrupal10(): void {
     // Load the update module file.
     if (!\function_exists('update_cron')) {
       $this->moduleHandler->loadInclude('update', 'module');
@@ -409,7 +424,27 @@ class UpdatesLog {
       $this->logger->warning('Updates Log is unable to fetch fresh module versions because: update_cron() is not defined!');
       return;
     }
+
+    // Call the procedural function.
     \update_cron();
+  }
+
+  /**
+   * Refresh module statuses using Drupal 11 approach.
+   *
+   * Uses the service-based approach introduced in Drupal 11.
+   */
+  protected function refreshDrupal11(): void {
+    try {
+      // First refresh the update data.
+      \Drupal::service('update.manager')->refreshUpdateData();
+
+      // Then fetch the data.
+      \Drupal::service('update.processor')->fetchData();
+    }
+    catch (\Exception $e) {
+      $this->logger->error('Updates Log encountered an error while fetching module versions: @message', ['@message' => $e->getMessage()]);
+    }
   }
 
   /**
@@ -563,6 +598,7 @@ class UpdatesLog {
    * @param string $env
    *   The environment, for example dev, stg, prod.
    *
+   // phpcs:disable
    * @return array{
    *   updates_log: string,
    *   site: string,
@@ -575,6 +611,7 @@ class UpdatesLog {
    *   details: array<string, array<string, string>>
    * }
    *   The statistics array.
+   // phpcs:enable
    */
   public function generateStatistics(
     array $statuses,
@@ -627,6 +664,7 @@ class UpdatesLog {
   /**
    * Logs the given Statistics in json using the Logger.
    *
+   // phpcs:disable
    * @param array{
    *   updates_log: string,
    *   site: string,
@@ -639,6 +677,7 @@ class UpdatesLog {
    *   details: array<string, array<string, string>>
    * } $statistics
    *   The statistics array.
+   // phpcs:enable
    */
   public function logStatistics(array $statistics): void {
     try {
