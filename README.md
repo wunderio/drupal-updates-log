@@ -1,6 +1,6 @@
 # Updates Log
 
-[![Version match](https://github.com/wunderio/drupal-updates-log/actions/workflows/validate-release.yml/badge.svg)](https://github.com/wunderio/drupal-updates-log/actions/workflows/validate-release.yml)
+[![Validate Release Tag vs Composer Version](https://github.com/wunderio/drupal-updates-log/actions/workflows/validate-release.yml/badge.svg)](https://github.com/wunderio/drupal-updates-log/actions/workflows/validate-release.yml)
 
 ## Project overview
 
