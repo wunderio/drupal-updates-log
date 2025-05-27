@@ -1,5 +1,7 @@
 # Updates Log
 
+[![Version match](https://github.com/wunderio/drupal-updates-log/actions/workflows/validate-release.yml/badge.svg)](https://github.com/wunderio/drupal-updates-log/actions/workflows/validate-release.yml)
+
 ## Project overview
 
 Updates Log is a Drupal module that logs project update statuses. It helps track security updates across multiple Drupal installations by logging module statuses on a daily basis and creating alerts based on these logs.
